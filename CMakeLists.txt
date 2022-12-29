@@ -9,15 +9,21 @@ set(EXTERN_DIR "${CMAKE_CURRENT_LIST_DIR}/external")
 set(SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/src")
 include_directories(
         "${CMAKE_CURRENT_LIST_DIR}/include"
-        "${EXTERN_DIR}/freeglut/include"
         "${EXTERN_DIR}/glfw/include"
-        "${EXTERN_DIR}/glm/glm"
+        "${EXTERN_DIR}/glm"
 )
 
-add_subdirectory("${EXTERN_DIR}/freeglut")
 add_subdirectory("${EXTERN_DIR}/glfw")
 
-set(TARGET_NAME "room")
+set(TARGET_NAME room_lib)
+add_library(
+        ${TARGET_NAME}
+        ${SOURCE_DIR}/camera.cpp
+        ${SOURCE_DIR}/transform.cpp
+        ${SOURCE_DIR}/glad.c
+        src/glsl_program.cpp src/model.cpp)
+
+set(TARGET_NAME room)
 add_executable(
         ${TARGET_NAME}
         ${SOURCE_DIR}/main.cpp
@@ -25,5 +31,5 @@ add_executable(
 target_link_libraries(
         ${TARGET_NAME}
         glfw
-        freeglut_static
+        room_lib
 )
