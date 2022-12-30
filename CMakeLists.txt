@@ -21,13 +21,15 @@ add_library(
         ${SOURCE_DIR}/camera.cpp
         ${SOURCE_DIR}/transform.cpp
         ${SOURCE_DIR}/glad.c
-        src/glsl_program.cpp src/model.cpp)
+        ${SOURCE_DIR}/glsl_program.cpp
+        ${SOURCE_DIR}/model.cpp
+        ${SOURCE_DIR}/stb_image.cpp)
 
 set(TARGET_NAME room)
 add_executable(
         ${TARGET_NAME}
         ${SOURCE_DIR}/main.cpp
-)
+        ${SOURCE_DIR}/window.cpp)
 target_link_libraries(
         ${TARGET_NAME}
         glfw
