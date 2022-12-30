@@ -28,7 +28,10 @@ add_library(
 set(TARGET_NAME room)
 add_executable(
         ${TARGET_NAME}
-        ${SOURCE_DIR}/main.cpp)
+        ${SOURCE_DIR}/main.cpp
+        ${SOURCE_DIR}/entity.cpp
+        ${SOURCE_DIR}/utility.cpp
+        ${SOURCE_DIR}/window.cpp)
 target_link_libraries(
         ${TARGET_NAME}
         glfw
