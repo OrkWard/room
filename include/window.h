@@ -12,6 +12,7 @@
 
 #include "entity.h"
 #include "glsl_program.h"
+#include "camera.h"
 
 class Window;
 class MainWindow;
@@ -33,6 +34,7 @@ private:
     std::unique_ptr<EntityWindow> entityWindow;
 public:
     MainWindow(int width, int height);
+    ~MainWindow();
     void switchEntity();
     void render() override;
 private:
@@ -42,8 +44,9 @@ private:
 
 class EntityWindow: public Window {
 private:
-    std::unique_ptr<GLSLProgram> triShader;
-    std::unique_ptr<CreateEntity> createEntity;
+    std::unique_ptr<GLSLProgram> primitiveShader;
+    std::unique_ptr<Cube> cube;
+    std::unique_ptr<Camera> camera;
 public:
     static const int ENWIDTH = 230;
     static const int ENHEIGHT = 200;
@@ -53,6 +56,7 @@ public:
     void render() override;
 private:
     static void window_close_callback(GLFWwindow *window);
+    static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 };
 
 #endif //ROOM_WINDOW_H

@@ -1,6 +1,5 @@
 #include "window.h"
 
-#include <memory>
 // base class Window
 // -----------------
 
@@ -35,7 +34,13 @@ MainWindow::MainWindow(int width, int height): Window(width, height, "Room") {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 }
 
+MainWindow::~MainWindow() {
+    entityWindow = nullptr;
+    glfwDestroyWindow(window);
+}
+
 void MainWindow::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+    glfwMakeContextCurrent(window);
     glViewport(0, 0, width, height);
 }
 
@@ -65,13 +70,14 @@ void MainWindow::render() {
 
 EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "Create Entity") {
     glfwSetWindowCloseCallback(window, window_close_callback);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetWindowUserPointer(window, mainWindow);
-    createEntity = std::make_unique<CreateEntity>(1, 1, 1, 1);
+    cube = std::make_unique<Cube>();
 
-    triShader = std::make_unique<GLSLProgram>();
-    triShader->attachVertexShaderFromFile("../glsl/triangle.vert");
-    triShader->attachFragmentShaderFromFile("../glsl/triangle.frag");
-    triShader->link();
+    primitiveShader = std::make_unique<GLSLProgram>();
+    primitiveShader->attachVertexShaderFromFile("../glsl/primitive.vert");
+    primitiveShader->attachFragmentShaderFromFile("../glsl/primitive.frag");
+    primitiveShader->link();
 }
 
 void EntityWindow::window_close_callback(GLFWwindow *window) {
@@ -81,13 +87,30 @@ void EntityWindow::window_close_callback(GLFWwindow *window) {
 
 void EntityWindow::render() {
     glfwMakeContextCurrent(window);
-    triShader->use();
-    createEntity->draw();
+    glClearColor(0.3f, 0.2f, 0.9f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    primitiveShader->use();
+    glm::mat4 model(1.0f);
+    glm::mat4 view = glm::lookAt(glm::vec3(5.0f, 5.0f, 5.0f),
+                                 glm::vec3(.0f, .0f, .0f),
+                                 glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 project = glm::perspective(glm::radians(45.0f),
+                                            (float)ENWIDTH / ENHEIGHT, 0.1f, 100.0f);
+    primitiveShader->setUniformMat4("model", model);
+    primitiveShader->setUniformMat4("view", view);
+    primitiveShader->setUniformMat4("project", project);
+    cube->draw();
     glfwSwapBuffers(window);
 }
 
 EntityWindow::~EntityWindow() {
-    createEntity = nullptr;
-    triShader = nullptr;
+    cube = nullptr;
+    primitiveShader = nullptr;
     glfwDestroyWindow(window);
+}
+
+void EntityWindow::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+    glfwMakeContextCurrent(window);
+    glViewport(0, 0, width, height);
 }

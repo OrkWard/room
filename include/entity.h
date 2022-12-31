@@ -4,12 +4,16 @@
 #include <glad/glad.h>
 #include "utility.h"
 
-class CreateEntity {
-private:
+class Entity {
+protected:
     unsigned int _vbo = 0;
     unsigned int _vao = 0;
 public:
-    CreateEntity(double xPos, double yPos, double width, double height);
-    ~CreateEntity();
-    void draw();
+    virtual void draw() = 0;
+};
+
+class Cube: public Entity{
+public:
+    Cube();
+    void draw() override;
 };
