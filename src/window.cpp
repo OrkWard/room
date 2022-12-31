@@ -41,7 +41,6 @@ void MainWindow::framebuffer_size_callback(GLFWwindow *window, int width, int he
 
 void MainWindow::key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_A && action == GLFW_PRESS && mods == GLFW_MOD_SHIFT) {
-        std::cout << "key a pressed with shift hold" << std::endl;
         auto* mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
         mainWindow->switchEntity();
     }
@@ -49,7 +48,9 @@ void MainWindow::key_callback(GLFWwindow *window, int key, int scancode, int act
 
 void MainWindow::switchEntity() {
     if (!entityWindow)
-        entityWindow = std::make_unique<EntityWindow>();
+        entityWindow = std::make_unique<EntityWindow>(this);
+    else
+        entityWindow = nullptr;
 }
 
 void MainWindow::render() {
@@ -62,7 +63,9 @@ void MainWindow::render() {
 // EntityWindow
 // ------------
 
-EntityWindow::EntityWindow(): Window(ENWIDTH, ENHEIGHT, "Create Entity") {
+EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "Create Entity") {
+    glfwSetWindowCloseCallback(window, window_close_callback);
+    glfwSetWindowUserPointer(window, mainWindow);
     createEntity = std::make_unique<CreateEntity>(1, 1, 1, 1);
 
     triShader = std::make_unique<GLSLProgram>();
@@ -71,9 +74,20 @@ EntityWindow::EntityWindow(): Window(ENWIDTH, ENHEIGHT, "Create Entity") {
     triShader->link();
 }
 
+void EntityWindow::window_close_callback(GLFWwindow *window) {
+    auto *mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
+    mainWindow->switchEntity();
+}
+
 void EntityWindow::render() {
     glfwMakeContextCurrent(window);
     triShader->use();
     createEntity->draw();
     glfwSwapBuffers(window);
+}
+
+EntityWindow::~EntityWindow() {
+    createEntity = nullptr;
+    triShader = nullptr;
+    glfwDestroyWindow(window);
 }

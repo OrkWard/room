@@ -36,8 +36,8 @@ public:
     void switchEntity();
     void render() override;
 private:
-    void static framebuffer_size_callback(GLFWwindow* window, int width, int height);
-    void static key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
+    static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+    static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 };
 
 class EntityWindow: public Window {
@@ -48,8 +48,11 @@ public:
     static const int ENWIDTH = 230;
     static const int ENHEIGHT = 200;
 public:
-    EntityWindow();
+    EntityWindow(MainWindow* mainWindow);
+    ~EntityWindow();
     void render() override;
+private:
+    static void window_close_callback(GLFWwindow *window);
 };
 
 #endif //ROOM_WINDOW_H
