@@ -88,7 +88,7 @@ void EntityWindow::window_close_callback(GLFWwindow *window) {
 
 void EntityWindow::render() {
     glfwMakeContextCurrent(window);
-    glClearColor(0.3f, 0.2f, 0.9f, 1.0f);
+    glClearColor(.0f, .0f, .0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     primitiveShader->use();
@@ -101,6 +101,13 @@ void EntityWindow::render() {
     primitiveShader->setUniformMat4("model", model);
     primitiveShader->setUniformMat4("view", view);
     primitiveShader->setUniformMat4("project", project);
+    primitiveShader->setUniformVec3("light.color", glm::vec3(0.5f, 0.3f, 0.8f));
+    primitiveShader->setUniformVec3("light.direction", glm::vec3(-5.0f, -10.0f, -13.0f));
+    primitiveShader->setUniformFloat("light.intensity", 1.0f);
+    primitiveShader->setUniformVec3("ambient.color", glm::vec3(1.0f));
+    primitiveShader->setUniformFloat("ambient.intensity", 0.1f);
+    primitiveShader->setUniformVec3("material.ka", glm::vec3(0.1f));
+    primitiveShader->setUniformVec3("material.kd", glm::vec3(1.0f));
     cube->draw();
 //    std::cout << glGetError() << std::endl;
     glfwSwapBuffers(window);
