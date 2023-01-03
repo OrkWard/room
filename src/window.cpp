@@ -72,10 +72,11 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "C
     glfwSetWindowCloseCallback(window, window_close_callback);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetWindowUserPointer(window, mainWindow);
-    cube = std::make_unique<Cube>();
+    cube = std::make_unique<Cube>(1.0f);
 
     primitiveShader = std::make_unique<GLSLProgram>();
     primitiveShader->attachVertexShaderFromFile("../glsl/primitive.vert");
+    primitiveShader->attachGeometryShaderFromFile("../glsl/primitive.geom");
     primitiveShader->attachFragmentShaderFromFile("../glsl/primitive.frag");
     primitiveShader->link();
 }
@@ -88,7 +89,7 @@ void EntityWindow::window_close_callback(GLFWwindow *window) {
 void EntityWindow::render() {
     glfwMakeContextCurrent(window);
     glClearColor(0.3f, 0.2f, 0.9f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     primitiveShader->use();
     glm::mat4 model(1.0f);
@@ -101,6 +102,7 @@ void EntityWindow::render() {
     primitiveShader->setUniformMat4("view", view);
     primitiveShader->setUniformMat4("project", project);
     cube->draw();
+//    std::cout << glGetError() << std::endl;
     glfwSwapBuffers(window);
 }
 

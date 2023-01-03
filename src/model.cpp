@@ -14,8 +14,8 @@ Model::Model(const std::string& filepath) {
 
     std::string err;
 
-    std::string::size_type index = filepath.find_last_of("/");
-    std::string mtlBaseDir = filepath.substr(0, index + 1);
+    std::string::size_type dirIndex = filepath.find_last_of('/');
+    std::string mtlBaseDir = filepath.substr(0, dirIndex + 1);
 
     if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filepath.c_str(), mtlBaseDir.c_str())) {
         throw std::runtime_error("load " + filepath + " failure: " + err);
@@ -229,7 +229,7 @@ void Model::initBoxGLResources() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _boxEbo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, boxIndices.size() * sizeof(uint32_t), boxIndices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr);
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
