@@ -13,6 +13,7 @@
 #include "entity.h"
 #include "glsl_program.h"
 #include "camera.h"
+#include "light.h"
 
 class Window;
 class MainWindow;
@@ -20,7 +21,7 @@ class EntityWindow;
 
 class Window {
 protected:
-    GLFWwindow *window;
+    GLFWwindow *_window;
 public:
     Window(int width, int height, char const *title);
     void makeCurrent();
@@ -44,9 +45,11 @@ private:
 
 class EntityWindow: public Window {
 private:
-    std::unique_ptr<GLSLProgram> primitiveShader;
-    std::unique_ptr<Cube> cube;
-    std::unique_ptr<Camera> camera;
+    std::unique_ptr<GLSLProgram> _primitiveShader;
+    std::unique_ptr<Cube> _cube;
+    std::unique_ptr<PerspectiveCamera> _camera;
+    AmbientLight _ambient;
+    DirectionalLight _light;
 public:
     static const int ENWIDTH = 230;
     static const int ENHEIGHT = 200;

@@ -4,39 +4,39 @@
 // -----------------
 
 Window::Window(int width, int height, char const *title) {
-    window = glfwCreateWindow(width, height, title, nullptr, nullptr);
-    if (window == nullptr) {
+    _window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+    if (_window == nullptr) {
         std::cout << "Failed to create GLFW mainWindow" << std::endl;
         glfwTerminate();
         exit(-1);
     }
-    glfwSetWindowUserPointer(window, this);
-    glfwMakeContextCurrent(window);
+    glfwSetWindowUserPointer(_window, this);
+    glfwMakeContextCurrent(_window);
 }
 
 void Window::makeCurrent() {
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(_window);
 }
 
 int Window::shouldClose() {
-    return glfwWindowShouldClose(window);
+    return glfwWindowShouldClose(_window);
 }
 
 GLFWwindow *Window::getHandle() {
-    return window;
+    return _window;
 }
 
 // MainWindow
 // ----------
 
 MainWindow::MainWindow(int width, int height): Window(width, height, "Room") {
-    glfwSetKeyCallback(window, key_callback);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetKeyCallback(_window, key_callback);
+    glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
 }
 
 MainWindow::~MainWindow() {
     entityWindow = nullptr;
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(_window);
 }
 
 void MainWindow::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -59,26 +59,38 @@ void MainWindow::switchEntity() {
 }
 
 void MainWindow::render() {
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(_window);
     if (entityWindow)
         entityWindow->render();
-    glfwSwapBuffers(window);
+    glfwSwapBuffers(_window);
 }
 
 // EntityWindow
 // ------------
 
 EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "Create Entity") {
-    glfwSetWindowCloseCallback(window, window_close_callback);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetWindowUserPointer(window, mainWindow);
-    cube = std::make_unique<Cube>(1.0f);
+    // init window
+    glfwSetWindowCloseCallback(_window, window_close_callback);
+    glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
+    glfwSetWindowUserPointer(_window, mainWindow);
+    _cube = std::make_unique<Cube>(1.0f);
 
-    primitiveShader = std::make_unique<GLSLProgram>();
-    primitiveShader->attachVertexShaderFromFile("../glsl/primitive.vert");
-    primitiveShader->attachGeometryShaderFromFile("../glsl/primitive.geom");
-    primitiveShader->attachFragmentShaderFromFile("../glsl/primitive.frag");
-    primitiveShader->link();
+    // init shader
+    _primitiveShader = std::make_unique<GLSLProgram>();
+    _primitiveShader->attachVertexShaderFromFile("../glsl/primitive.vert");
+    _primitiveShader->attachGeometryShaderFromFile("../glsl/primitive.geom");
+    _primitiveShader->attachFragmentShaderFromFile("../glsl/primitive.frag");
+    _primitiveShader->link();
+
+    // init camera
+    _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
+                                                  1.0 * ENWIDTH / ENHEIGHT, .1f, 10000.0f);
+    _camera->transform.position = glm::vec3(5.0f, 5.0f, 5.0f);
+    _camera->transform.lookAt(glm::vec3(0.0f));
+
+    // init light
+    _light.color = glm::vec3(0.3f, 0.4f, 0.8f);
+    _light.direction = glm::vec3(0.0f) - glm::vec3(5.0f, 4.0f, 3.0f);
 }
 
 void EntityWindow::window_close_callback(GLFWwindow *window) {
@@ -87,36 +99,31 @@ void EntityWindow::window_close_callback(GLFWwindow *window) {
 }
 
 void EntityWindow::render() {
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(_window);
     glClearColor(.0f, .0f, .0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    primitiveShader->use();
+    _primitiveShader->use();
     glm::mat4 model(1.0f);
-    glm::mat4 view = glm::lookAt(glm::vec3(5.0f, 5.0f, 5.0f),
-                                 glm::vec3(.0f, .0f, .0f),
-                                 glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 project = glm::perspective(glm::radians(45.0f),
-                                            (float)ENWIDTH / ENHEIGHT, 0.1f, 100.0f);
-    primitiveShader->setUniformMat4("model", model);
-    primitiveShader->setUniformMat4("view", view);
-    primitiveShader->setUniformMat4("project", project);
-    primitiveShader->setUniformVec3("light.color", glm::vec3(0.5f, 0.3f, 0.8f));
-    primitiveShader->setUniformVec3("light.direction", glm::vec3(-5.0f, -10.0f, -13.0f));
-    primitiveShader->setUniformFloat("light.intensity", 1.0f);
-    primitiveShader->setUniformVec3("ambient.color", glm::vec3(1.0f));
-    primitiveShader->setUniformFloat("ambient.intensity", 0.1f);
-    primitiveShader->setUniformVec3("material.ka", glm::vec3(0.1f));
-    primitiveShader->setUniformVec3("material.kd", glm::vec3(1.0f));
-    cube->draw();
+    _primitiveShader->setUniformMat4("model", model);
+    _primitiveShader->setUniformMat4("view", _camera->getViewMatrix());
+    _primitiveShader->setUniformMat4("project", _camera->getProjectionMatrix());
+    _primitiveShader->setUniformVec3("light.color", glm::vec3(0.5f, 0.3f, 0.8f));
+    _primitiveShader->setUniformVec3("light.direction", glm::vec3(-5.0f, -10.0f, -13.0f));
+    _primitiveShader->setUniformFloat("light.intensity", 1.0f);
+    _primitiveShader->setUniformVec3("ambient.color", glm::vec3(1.0f));
+    _primitiveShader->setUniformFloat("ambient.intensity", 0.1f);
+    _primitiveShader->setUniformVec3("material.ka", glm::vec3(0.1f));
+    _primitiveShader->setUniformVec3("material.kd", glm::vec3(1.0f));
+    _cube->draw();
 //    std::cout << glGetError() << std::endl;
-    glfwSwapBuffers(window);
+    glfwSwapBuffers(_window);
 }
 
 EntityWindow::~EntityWindow() {
-    cube = nullptr;
-    primitiveShader = nullptr;
-    glfwDestroyWindow(window);
+    _cube = nullptr;
+    _primitiveShader = nullptr;
+    glfwDestroyWindow(_window);
 }
 
 void EntityWindow::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
