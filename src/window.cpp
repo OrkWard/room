@@ -73,7 +73,15 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "C
     glfwSetWindowCloseCallback(_window, window_close_callback);
     glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
     glfwSetWindowUserPointer(_window, mainWindow);
-    _cube = std::make_unique<Cube>(1.0f);
+
+    // init entities
+    _cube = std::make_unique<Cube>(2.0f);
+    _cube->ka = glm::vec3(1.0f);
+    _cube->ns = 32.0f;
+
+    // init light cube
+    _lightCube = std::make_unique<Cube>(0.5f);
+    _lightCube->position = glm::vec3(5.0f, 3.0f, 4.0f);
 
     // init shader
     _primitiveShader = std::make_unique<GLSLProgram>();
@@ -81,6 +89,10 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "C
     _primitiveShader->attachGeometryShaderFromFile("../glsl/primitive.geom");
     _primitiveShader->attachFragmentShaderFromFile("../glsl/primitive.frag");
     _primitiveShader->link();
+    _cubeShader = std::make_unique<GLSLProgram>();
+    _cubeShader->attachVertexShaderFromFile("../glsl/simple.vert");
+    _cubeShader->attachFragmentShaderFromFile("../glsl/simple.frag");
+    _cubeShader->link();
 
     // init camera
     _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
@@ -90,7 +102,7 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "C
 
     // init light
     _light.color = glm::vec3(0.3f, 0.4f, 0.8f);
-    _light.direction = glm::vec3(0.0f) - glm::vec3(5.0f, 4.0f, 3.0f);
+    _ambient.color = glm::vec3(0.3f, 0.4f, 0.8f);
 }
 
 void EntityWindow::window_close_callback(GLFWwindow *window) {
@@ -99,22 +111,48 @@ void EntityWindow::window_close_callback(GLFWwindow *window) {
 }
 
 void EntityWindow::render() {
+    // process time
+    double currentFrame = glfwGetTime();
+    _deltaTime = currentFrame - _lastFrame;
+    _lastFrame = currentFrame;
+
+    // set point light position due to time
+    _light.position = glm::vec3(3 * glm::sin(glm::radians(currentFrame * 50)),
+                                 3 * glm::cos(glm::radians(currentFrame * 50)),
+                                 3.0f);
+    _lightCube->position = _light.position;
     glfwMakeContextCurrent(_window);
     glClearColor(.0f, .0f, .0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // draw point light cube
+    glEnable(GL_DEPTH_TEST);
+    _cubeShader->use();
+    glm::mat4 view = glm::lookAt(glm::vec3(8.0f, 10.0f, 7.0f),
+                                 glm::vec3(0.0f),
+                                 glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 project = glm::perspective(glm::radians(45.0f),
+                                         (float)ENWIDTH / ENHEIGHT, 0.1f, 100.0f);
+    _cubeShader->setUniformMat4("model", _lightCube->getModelMat());
+    _cubeShader->setUniformMat4("view", view);
+    _cubeShader->setUniformMat4("project", project);
+    _lightCube->draw();
+
+    // draw primitives
     _primitiveShader->use();
-    glm::mat4 model(1.0f);
-    _primitiveShader->setUniformMat4("model", model);
-    _primitiveShader->setUniformMat4("view", _camera->getViewMatrix());
-    _primitiveShader->setUniformMat4("project", _camera->getProjectionMatrix());
-    _primitiveShader->setUniformVec3("light.color", glm::vec3(0.5f, 0.3f, 0.8f));
-    _primitiveShader->setUniformVec3("light.direction", glm::vec3(-5.0f, -10.0f, -13.0f));
-    _primitiveShader->setUniformFloat("light.intensity", 1.0f);
-    _primitiveShader->setUniformVec3("ambient.color", glm::vec3(1.0f));
-    _primitiveShader->setUniformFloat("ambient.intensity", 0.1f);
-    _primitiveShader->setUniformVec3("material.ka", glm::vec3(0.1f));
-    _primitiveShader->setUniformVec3("material.kd", glm::vec3(1.0f));
+    _primitiveShader->setUniformMat4("model", _cube->getModelMat());
+    _primitiveShader->setUniformMat4("view", view);
+    _primitiveShader->setUniformMat4("project", project);
+    _primitiveShader->setUniformVec3("light.color", _light.color);
+    _primitiveShader->setUniformVec3("light.position", _light.position);
+    _primitiveShader->setUniformFloat("light.intensity", _light.intensity);
+    _primitiveShader->setUniformVec3("ambient.color", _ambient.color);
+    _primitiveShader->setUniformFloat("ambient.intensity", _ambient.intensity);
+    _primitiveShader->setUniformVec3("material.ka", _cube->ka);
+    _primitiveShader->setUniformVec3("material.kd", _cube->kd);
+    _primitiveShader->setUniformVec3("material.ks", _cube->ks);
+    _primitiveShader->setUniformFloat("material.ns", _cube->ns);
+    _primitiveShader->setUniformVec3("viewPos", glm::vec3(8.0f, 10.0f, 7.0f));
     _cube->draw();
 //    std::cout << glGetError() << std::endl;
     glfwSwapBuffers(_window);

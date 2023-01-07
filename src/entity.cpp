@@ -36,11 +36,20 @@ Cube::Cube(float side) {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)nullptr);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
+
+
+    // init material
+    ka = glm::vec3(0.1f);
+    kd = glm::vec3(0.8f);
+    ks = glm::vec3(0.8f);
 }
 
 void Cube::draw() {
-    glEnable(GL_DEPTH_TEST);
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
-    glDisable(GL_DEPTH_TEST);
+}
+
+glm::mat4 Entity::getModelMat() {
+    glm::mat4 model(1.0f);
+    return glm::translate(model, position);
 }

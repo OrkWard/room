@@ -1,5 +1,6 @@
 #version 330 core
 in vec3 normal;
+in vec3 fragPos;
 out vec4 color;
 
 struct Ambient {
@@ -8,7 +9,7 @@ struct Ambient {
 };
 
 struct Light {
-    vec3 direction;
+    vec3 position;
     vec3 color;
     float intensity;
 };
@@ -16,18 +17,24 @@ struct Light {
 struct Material {
     vec3 ka;
     vec3 kd;
-//    vec3 ks;
-//    float ns;
+    vec3 ks;
+    float ns;
 };
 
 uniform Ambient ambient;
 uniform Light light;
 uniform Material material;
+uniform vec3 viewPos;
 
 void main() {
+    vec3 lightDir = normalize(fragPos - light.position);
     vec3 ambientLight = ambient.color * material.ka * ambient.intensity;
 
-    vec3 diffLight = max(dot(normal, normalize(-light.direction)), 0.0) * light.color * material.kd * light.intensity;
+    vec3 diffLight = max(dot(normal, -lightDir), 0.0) * light.color * material.kd * light.intensity;
 
-    color = vec4(ambientLight + diffLight, 0.0f);
+    vec3 viewDir = normalize(viewPos - fragPos);
+    vec3 reflectDir = reflect(lightDir, normal);
+    vec3 specularLight = pow(max(dot(viewDir, reflectDir), 0.0f), material.ns) * light.color * material.ks * light.intensity;
+
+    color = vec4(ambientLight + diffLight + specularLight, 1.0f);
 }

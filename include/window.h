@@ -22,6 +22,8 @@ class EntityWindow;
 class Window {
 protected:
     GLFWwindow *_window;
+    double _deltaTime = 0;
+    double _lastFrame = 0;
 public:
     Window(int width, int height, char const *title);
     void makeCurrent();
@@ -47,9 +49,11 @@ class EntityWindow: public Window {
 private:
     std::unique_ptr<GLSLProgram> _primitiveShader;
     std::unique_ptr<Cube> _cube;
+    std::unique_ptr<GLSLProgram> _cubeShader;
+    std::unique_ptr<Cube> _lightCube;
     std::unique_ptr<PerspectiveCamera> _camera;
     AmbientLight _ambient;
-    DirectionalLight _light;
+    PointLight _light;
 public:
     static const int ENWIDTH = 230;
     static const int ENHEIGHT = 200;
