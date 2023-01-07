@@ -45,8 +45,10 @@ Cube::Cube(float side) {
 }
 
 void Cube::draw() {
+    glEnable(GL_DEPTH_TEST);
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+    glDisable(GL_DEPTH_TEST);
 }
 
 glm::mat4 Entity::getModelMat() {

@@ -96,9 +96,8 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "C
 
     // init camera
     _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
-                                                  1.0 * ENWIDTH / ENHEIGHT, .1f, 10000.0f);
-    _camera->transform.position = glm::vec3(5.0f, 5.0f, 5.0f);
-    _camera->transform.lookAt(glm::vec3(0.0f));
+                                                  (float)ENWIDTH / ENHEIGHT, .1f, 10000.0f);
+    _camera->position = glm::vec3(8.0f, 7.0f, 10.0f);
 
     // init light
     _light.color = glm::vec3(0.3f, 0.4f, 0.8f);
@@ -126,23 +125,17 @@ void EntityWindow::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // draw point light cube
-    glEnable(GL_DEPTH_TEST);
     _cubeShader->use();
-    glm::mat4 view = glm::lookAt(glm::vec3(8.0f, 10.0f, 7.0f),
-                                 glm::vec3(0.0f),
-                                 glm::vec3(0.0f, 0.0f, 1.0f));
-    glm::mat4 project = glm::perspective(glm::radians(45.0f),
-                                         (float)ENWIDTH / ENHEIGHT, 0.1f, 100.0f);
     _cubeShader->setUniformMat4("model", _lightCube->getModelMat());
-    _cubeShader->setUniformMat4("view", view);
-    _cubeShader->setUniformMat4("project", project);
+    _cubeShader->setUniformMat4("view", _camera->getViewMatrix());
+    _cubeShader->setUniformMat4("project", _camera->getProjectionMatrix());
     _lightCube->draw();
 
     // draw primitives
     _primitiveShader->use();
     _primitiveShader->setUniformMat4("model", _cube->getModelMat());
-    _primitiveShader->setUniformMat4("view", view);
-    _primitiveShader->setUniformMat4("project", project);
+    _primitiveShader->setUniformMat4("view", _camera->getViewMatrix());
+    _primitiveShader->setUniformMat4("project", _camera->getProjectionMatrix());
     _primitiveShader->setUniformVec3("light.color", _light.color);
     _primitiveShader->setUniformVec3("light.position", _light.position);
     _primitiveShader->setUniformFloat("light.intensity", _light.intensity);

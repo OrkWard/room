@@ -1,14 +1,16 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "transform.h"
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 class Camera {
 public:
-	Transform transform;
+    glm::vec3 position;
+    glm::vec3 center;
+    glm::vec3 up;
 public:
-	virtual ~Camera() = default;
-	
+    Camera();
 	glm::mat4 getViewMatrix() const;
 
 	virtual glm::mat4 getProjectionMatrix() const = 0;
@@ -17,14 +19,9 @@ public:
 
 class PerspectiveCamera : public Camera {
 public:
-	float fovy;
-	float aspect;
-	float znear;
-	float zfar;
+    glm::mat4 project{};
 public:
 	PerspectiveCamera(float fovy, float aspect, float znear, float zfar);
-
-	~PerspectiveCamera() = default;
 
 	glm::mat4 getProjectionMatrix() const override;
 };
@@ -32,17 +29,10 @@ public:
 
 class OrthographicCamera : public Camera {
 public:
-	float left;
-	float right;
-	float bottom;
-	float top;
-	float znear;
-	float zfar;
+    glm::mat4 project;
 public:
 	OrthographicCamera(float left, float right, float bottom, float top, float znear, float zfar);
 	
-	~OrthographicCamera() = default;
-
 	glm::mat4 getProjectionMatrix() const override;
 };
 
