@@ -19,7 +19,7 @@ Cube::Cube(float side) {
             6, 4, 5, 6, 5, 7,
             4, 0, 1, 4, 1, 5,
             0, 4, 6, 0, 6, 2,
-            1, 5, 7, 1, 7, 3,
+            1, 7, 5, 1, 3, 7,
     };
 
     glGenBuffers(1, &_vbo);
@@ -36,12 +36,6 @@ Cube::Cube(float side) {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)nullptr);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
-
-
-    // init material
-    ka = glm::vec3(0.1f);
-    kd = glm::vec3(0.8f);
-    ks = glm::vec3(0.8f);
 }
 
 void Cube::draw() {
@@ -51,7 +45,12 @@ void Cube::draw() {
     glDisable(GL_DEPTH_TEST);
 }
 
-glm::mat4 Entity::getModelMat() {
-    glm::mat4 model(1.0f);
-    return glm::translate(model, position);
+glm::mat4 Entity::getModelMat() const {
+    return glm::translate(glm::mat4(1.0f), position) *
+           glm::mat4_cast(rotation) *
+           glm::scale(glm::mat4(1.0f), scale);
+}
+
+glm::vec3 Entity::getDefaultUp() {
+    return {0.0f, 0.0f, 1.0f};
 }

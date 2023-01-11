@@ -19,7 +19,6 @@ set(TARGET_NAME room_lib)
 add_library(
         ${TARGET_NAME}
         ${SOURCE_DIR}/camera.cpp
-        ${SOURCE_DIR}/transform.cpp
         ${SOURCE_DIR}/glad.c
         ${SOURCE_DIR}/glsl_program.cpp
         ${SOURCE_DIR}/model.cpp

@@ -1,9 +1,10 @@
 #pragma once
 
-#include "transform.h"
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 struct AmbientLight {
-    float intensity = 0.1f;
+    float intensity = 0.3f;
     glm::vec3 color = { 1.0f, 1.0f, 1.0f };
 };
 

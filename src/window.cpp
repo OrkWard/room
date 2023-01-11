@@ -14,6 +14,14 @@ Window::Window(int width, int height, char const *title) {
     glfwMakeContextCurrent(_window);
 }
 
+void Window::initNormalShader() {
+    _normalShader = std::make_unique<GLSLProgram>();
+    _normalShader->attachVertexShaderFromFile("../glsl/normal.vert");
+    _normalShader->attachGeometryShaderFromFile("../glsl/normal.geom");
+    _normalShader->attachFragmentShaderFromFile("../glsl/normal.frag");
+    _normalShader->link();
+}
+
 void Window::makeCurrent() {
     glfwMakeContextCurrent(_window);
 }
@@ -45,7 +53,7 @@ void MainWindow::framebuffer_size_callback(GLFWwindow *window, int width, int he
 }
 
 void MainWindow::key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_A && action == GLFW_PRESS && mods == GLFW_MOD_SHIFT) {
+    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
         auto* mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
         mainWindow->switchEntity();
     }
@@ -76,8 +84,6 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "C
 
     // init entities
     _cube = std::make_unique<Cube>(2.0f);
-    _cube->ka = glm::vec3(1.0f);
-    _cube->ns = 32.0f;
 
     // init light cube
     _lightCube = std::make_unique<Cube>(0.5f);
@@ -93,6 +99,7 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "C
     _cubeShader->attachVertexShaderFromFile("../glsl/simple.vert");
     _cubeShader->attachFragmentShaderFromFile("../glsl/simple.frag");
     _cubeShader->link();
+    initNormalShader();
 
     // init camera
     _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
@@ -101,6 +108,7 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "C
 
     // init light
     _light.color = glm::vec3(0.3f, 0.4f, 0.8f);
+    _light.position = glm::vec3(3.0f, -3.0f, 3.0f);
     _ambient.color = glm::vec3(0.3f, 0.4f, 0.8f);
 }
 
@@ -115,16 +123,14 @@ void EntityWindow::render() {
     _deltaTime = currentFrame - _lastFrame;
     _lastFrame = currentFrame;
 
-    // set point light position due to time
-    _light.position = glm::vec3(3 * glm::sin(glm::radians(currentFrame * 50)),
-                                 3 * glm::cos(glm::radians(currentFrame * 50)),
-                                 3.0f);
+    _cube->rotation = glm::angleAxis((float)glm::radians(currentFrame * 50.0f), _cube->getDefaultUp());
     _lightCube->position = _light.position;
+
     glfwMakeContextCurrent(_window);
     glClearColor(.0f, .0f, .0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // draw point light cube
+    // draw point light cube (for debug)
     _cubeShader->use();
     _cubeShader->setUniformMat4("model", _lightCube->getModelMat());
     _cubeShader->setUniformMat4("view", _camera->getViewMatrix());
@@ -145,7 +151,14 @@ void EntityWindow::render() {
     _primitiveShader->setUniformVec3("material.kd", _cube->kd);
     _primitiveShader->setUniformVec3("material.ks", _cube->ks);
     _primitiveShader->setUniformFloat("material.ns", _cube->ns);
-    _primitiveShader->setUniformVec3("viewPos", glm::vec3(8.0f, 10.0f, 7.0f));
+    _primitiveShader->setUniformVec3("viewPos", _camera->position);
+    _cube->draw();
+
+    // draw normal (for debug)
+    _normalShader->use();
+    _normalShader->setUniformMat4("model", _cube->getModelMat());
+    _normalShader->setUniformMat4("view", _camera->getViewMatrix());
+    _normalShader->setUniformMat4("project", _camera->getProjectionMatrix());
     _cube->draw();
 //    std::cout << glGetError() << std::endl;
     glfwSwapBuffers(_window);

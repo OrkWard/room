@@ -24,12 +24,15 @@ protected:
     GLFWwindow *_window;
     double _deltaTime = 0;
     double _lastFrame = 0;
+    std::unique_ptr<GLSLProgram> _normalShader;
 public:
     Window(int width, int height, char const *title);
     void makeCurrent();
     int shouldClose();
     GLFWwindow* getHandle();
     virtual void render() = 0;
+protected:
+    void initNormalShader();
 };
 
 class MainWindow: public Window {
@@ -55,10 +58,10 @@ private:
     AmbientLight _ambient;
     PointLight _light;
 public:
-    static const int ENWIDTH = 230;
-    static const int ENHEIGHT = 200;
+    static const int ENWIDTH = 400;
+    static const int ENHEIGHT = 400;
 public:
-    EntityWindow(MainWindow* mainWindow);
+    explicit EntityWindow(MainWindow* mainWindow);
     ~EntityWindow();
     void render() override;
 private:

@@ -2,7 +2,8 @@
 
 #include <string>
 #include <glad/glad.h>
-#include "transform.h"
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 class Entity {
 protected:
@@ -10,19 +11,22 @@ protected:
     unsigned int _vao = 0;
     unsigned int _ebo = 0;
 public:
-    glm::vec3 position = {0.0f, 0.0f, 0.0f};
+    glm::vec3 position = glm::vec3(.0f);
+    glm::quat rotation = glm::angleAxis(0.0f, glm::vec3(.0f, .0f, 1.0f));
+    glm::vec3 scale = glm::vec3(1.0f);
 public:
-    glm::mat4 getModelMat();
+    glm::mat4 getModelMat() const;
+    static glm::vec3 getDefaultUp();
     virtual void draw() = 0;
 };
 
 class Cube: public Entity{
 public:
-    glm::vec3 ka;
-    glm::vec3 kd;
-    glm::vec3 ks;
+    glm::vec3 ka = glm::vec3(0.1f);
+    glm::vec3 kd = glm::vec3(1.0f);
+    glm::vec3 ks = glm::vec3(1.0f);
     float ns = 32.0f;
 public:
-    Cube(float side);
+    explicit Cube(float side);
     void draw() override;
 };
