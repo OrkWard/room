@@ -52,6 +52,7 @@ class EntityWindow: public Window {
 private:
     std::unique_ptr<GLSLProgram> _primitiveShader;
     std::unique_ptr<Cube> _cube;
+    std::unique_ptr<Sphere> _sphere;
     std::unique_ptr<GLSLProgram> _cubeShader;
     std::unique_ptr<Cube> _lightCube;
     std::unique_ptr<PerspectiveCamera> _camera;

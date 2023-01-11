@@ -84,6 +84,7 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "C
 
     // init entities
     _cube = std::make_unique<Cube>(2.0f);
+    _sphere = std::make_unique<Sphere>(2.0f, 36, 36);
 
     // init light cube
     _lightCube = std::make_unique<Cube>(0.5f);
@@ -123,7 +124,7 @@ void EntityWindow::render() {
     _deltaTime = currentFrame - _lastFrame;
     _lastFrame = currentFrame;
 
-    _cube->rotation = glm::angleAxis((float)glm::radians(currentFrame * 50.0f), _cube->getDefaultUp());
+    _cube->rotation = glm::angleAxis((float)currentFrame, _cube->getDefaultUp());
     _lightCube->position = _light.position;
 
     glfwMakeContextCurrent(_window);
@@ -152,14 +153,9 @@ void EntityWindow::render() {
     _primitiveShader->setUniformVec3("material.ks", _cube->ks);
     _primitiveShader->setUniformFloat("material.ns", _cube->ns);
     _primitiveShader->setUniformVec3("viewPos", _camera->position);
-    _cube->draw();
+//    _cube->draw();
+    _sphere->draw();
 
-    // draw normal (for debug)
-    _normalShader->use();
-    _normalShader->setUniformMat4("model", _cube->getModelMat());
-    _normalShader->setUniformMat4("view", _camera->getViewMatrix());
-    _normalShader->setUniformMat4("project", _camera->getProjectionMatrix());
-    _cube->draw();
 //    std::cout << glGetError() << std::endl;
     glfwSwapBuffers(_window);
 }

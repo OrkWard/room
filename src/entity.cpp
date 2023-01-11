@@ -54,3 +54,72 @@ glm::mat4 Entity::getModelMat() const {
 glm::vec3 Entity::getDefaultUp() {
     return {0.0f, 0.0f, 1.0f};
 }
+
+Sphere::Sphere(float radius, int sectors, int stacks) {
+    std::vector<float> vertices;
+
+    for (int i = 0; i < stacks; ++i) {
+        float stackAngle = glm::pi<float>() * (0.5f - (float)i / stacks);
+        float z, xy;
+        z = radius * glm::sin(stackAngle);
+        xy = radius * glm::cos(stackAngle);
+
+        for (int j = 0; j <= sectors; ++j) {
+            float sectorAngle = 2 * glm::pi<float>() / sectors * j;
+            float x = xy * glm::cos(sectorAngle);
+            float y = xy * glm::sin(sectorAngle);
+            vertices.push_back(x);
+            vertices.push_back(y);
+            vertices.push_back(z);
+
+            float s = (float)j / sectors;
+            float t = (float)i / stacks;
+            vertices.push_back(s);
+            vertices.push_back(t);
+        }
+    }
+
+    std::vector<unsigned int> indices;
+    for (int i = 0; i < stacks; ++i) {
+        int k1 = i * (sectors + 1);
+        int k2 = k1 + sectors + 1;
+
+        for (int j = 0; j <= sectors; ++j, ++k1, ++k2) {
+            if (i != 0) {
+                indices.push_back(k1);
+                indices.push_back(k1 + 1);
+                indices.push_back(k2);
+            }
+
+            if (i != stacks - 1) {
+                indices.push_back(k1 + 1);
+                indices.push_back(k2 + 1);
+                indices.push_back(k2);
+            }
+        }
+    }
+    _count = indices.size();
+
+    glGenBuffers(1, &_vbo);
+    glGenBuffers(1, &_ebo);
+    glGenVertexArrays(1, &_vao);
+
+    glBindVertexArray(_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+//    glEnableVertexAttribArray(1);
+    glBindVertexArray(0);
+}
+
+void Sphere::draw() {
+    glEnable(GL_DEPTH_TEST);
+    glBindVertexArray(_vao);
+    glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, nullptr);
+    glDisable(GL_DEPTH_TEST);
+}
