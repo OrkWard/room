@@ -55,19 +55,24 @@ public:
     static const int EN_HEIGHT;
 private:
     std::unique_ptr<GLSLProgram> _primitiveShader;
-    std::unique_ptr<Cube> _cube;
-    std::unique_ptr<Sphere> _sphere;
     std::unique_ptr<GLSLProgram> _cubeShader;
     std::unique_ptr<Cube> _lightCube;
     std::unique_ptr<PerspectiveCamera> _camera;
     AmbientLight _ambient;
     PointLight _light;
 
+    // entities
+    std::unique_ptr<Cube> _cube;
+    std::unique_ptr<Sphere> _sphere;
+    std::unique_ptr<Frustum> _prism;
+    std::unique_ptr<Frustum> _pyramid;
+
+    // framebuffer
     std::unique_ptr<Framebuffer> _framebuffer;
     std::unique_ptr<Texture2D> _colorTexture;
     std::unique_ptr<Texture2D> _depthTexture;
     std::unique_ptr<GLSLProgram> _quadShader;
-    std::unique_ptr<Quad> _quad[6];
+    std::unique_ptr<Quad> _quad[4];
 public:
     explicit EntityWindow(MainWindow* mainWindow);
     ~EntityWindow();

@@ -71,8 +71,8 @@ void MainWindow::render() {
 
 // EntityWindow
 // ------------
-int const EntityWindow::EN_HEIGHT = 400;
-int const EntityWindow::EN_WIDTH = 400;
+int const EntityWindow::EN_HEIGHT = 800;
+int const EntityWindow::EN_WIDTH = 800;
 
 EntityWindow::EntityWindow(MainWindow *mainWindow): Window(EN_WIDTH, EN_HEIGHT, "Create Entity") {
     // init window
@@ -83,6 +83,8 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(EN_WIDTH, EN_HEIGHT, 
     // init entities
     _cube = std::make_unique<Cube>(2.0f);
     _sphere = std::make_unique<Sphere>(2.0f, 36, 36);
+    _prism = std::make_unique<Frustum>(2.0f, 2.0f, 4.0f, 36);
+    _pyramid = std::make_unique<Frustum>(2.0f, 0.0f, 4.0f, 36);
 
     // init light cube
     _lightCube = std::make_unique<Cube>(0.5f);
@@ -91,6 +93,8 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(EN_WIDTH, EN_HEIGHT, 
     // init quad
     _quad[0] = std::make_unique<Quad>(-1.0f, 0.0f, 1.0f, 0.0f);
     _quad[1] = std::make_unique<Quad>(0.0f, 1.0f, 1.0f, 0.0f);
+    _quad[2] = std::make_unique<Quad>(-1.0f, 0.0f, 0.0f, -1.0f);
+    _quad[3] = std::make_unique<Quad>(0.0f, 1.0f, 0.0f, -1.0f);
 
     // init shader
     _primitiveShader = std::make_unique<GLSLProgram>();
@@ -142,7 +146,9 @@ void EntityWindow::render() {
 
     // rotate
     _cube->rotation = glm::angleAxis((float)currentFrame / 2, _cube->getDefaultUp());
-    _sphere->rotation = glm::angleAxis((float)currentFrame / 2, _cube->getDefaultUp());
+    _sphere->rotation = glm::angleAxis((float)currentFrame / 2, _sphere->getDefaultUp());
+    _prism->rotation = glm::angleAxis((float)currentFrame / 2, _prism->getDefaultUp());
+    _pyramid->rotation = glm::angleAxis((float)currentFrame / 2, _pyramid->getDefaultUp());
     _lightCube->position = _light.position;
 
     glfwMakeContextCurrent(_window);
@@ -153,6 +159,8 @@ void EntityWindow::render() {
     // draw primitives
     drawEntity(*_cube, 0);
     drawEntity(*_sphere, 1);
+    drawEntity(*_prism, 2);
+    drawEntity(*_pyramid, 3);
 
 //    std::cout << glGetError() << std::endl;
     /* end render */

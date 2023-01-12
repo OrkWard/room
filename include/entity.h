@@ -36,7 +36,15 @@ class Sphere: public Entity {
 private:
     long _count;
 public:
-    explicit Sphere(float radius, int sectors, int stacks);
+    Sphere(float radius, int sectors, int stacks);
+    void draw() const override;
+};
+
+class Frustum: public Entity {
+private:
+    long _count;
+public:
+    Frustum(float base, float top, float height, int sectors);
     void draw() const override;
 };
 

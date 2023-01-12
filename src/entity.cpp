@@ -157,3 +157,68 @@ void Quad::draw() const {
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
+
+Frustum::Frustum(float base, float top, float height, int sectors) {
+    std::vector<float> vertices;
+
+    for (int i = 0; i <= sectors; ++i) {
+        float sectorAngle = 2 * glm::pi<float>() * i / sectors;
+        vertices.push_back(top * glm::cos(sectorAngle));
+        vertices.push_back(top * glm::sin(sectorAngle));
+        vertices.push_back(height / 2);
+
+        vertices.push_back(base * glm::cos(sectorAngle));
+        vertices.push_back(base * glm::sin(sectorAngle));
+        vertices.push_back(-height / 2);
+    }
+    vertices.push_back(0.0f);
+    vertices.push_back(0.0f);
+    vertices.push_back(height / 2);
+    vertices.push_back(0.0f);
+    vertices.push_back(0.0f);
+    vertices.push_back(-height / 2);
+
+    std::vector<unsigned int> indices;
+    for (int i = 0; i < sectors; ++i) {
+        int k = i * 2;
+        indices.push_back(k);
+        indices.push_back(k + 2);
+        indices.push_back(k + 1);
+
+        indices.push_back(k + 1);
+        indices.push_back(k + 2);
+        indices.push_back(k + 3);
+
+        // up
+        indices.push_back(k);
+        indices.push_back(2 * (sectors + 1));
+        indices.push_back(k + 2);
+
+        // down
+        indices.push_back(k + 1);
+        indices.push_back(k + 3);
+        indices.push_back(2 * (sectors + 1) + 1);
+    }
+    _count = indices.size();
+
+    glGenBuffers(1, &_vbo);
+    glGenBuffers(1, &_ebo);
+    glGenVertexArrays(1, &_vao);
+
+    glBindVertexArray(_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+}
+
+void Frustum::draw() const {
+    glEnable(GL_DEPTH_TEST);
+    glBindVertexArray(_vao);
+    glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, nullptr);
+    glDisable(GL_DEPTH_TEST);
+}
