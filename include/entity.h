@@ -39,3 +39,13 @@ public:
     explicit Sphere(float radius, int sectors, int stacks);
     void draw() override;
 };
+
+class Quad {
+private:
+    unsigned int _vbo = 0;
+    unsigned int _vao = 0;
+    unsigned int _ebo = 0;
+public:
+    Quad(float left, float right, float up, float bottom);
+    void draw() const;
+};

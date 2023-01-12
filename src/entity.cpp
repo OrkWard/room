@@ -113,7 +113,7 @@ Sphere::Sphere(float radius, int sectors, int stacks) {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-//    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 }
 
@@ -122,4 +122,38 @@ void Sphere::draw() {
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, nullptr);
     glDisable(GL_DEPTH_TEST);
+}
+
+Quad::Quad(float left, float right, float up, float bottom) {
+    std::vector<float> vertices = {
+            left, up, 0.0f, 1.0f,
+            right, up, 1.0f, 1.0f,
+            left, bottom, 0.0f, 0.0f,
+            right, bottom, 1.0f, 0.0f
+    };
+    std::vector<unsigned int> indices = {
+            0, 1, 2,
+            1, 3, 2
+    };
+
+    glGenBuffers(1, &_vbo);
+    glGenBuffers(1, &_ebo);
+    glGenVertexArrays(1, &_vao);
+
+    glBindVertexArray(_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glBindVertexArray(0);
+}
+
+void Quad::draw() const {
+    glBindVertexArray(_vao);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }

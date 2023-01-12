@@ -30,10 +30,6 @@ int Window::shouldClose() {
     return glfwWindowShouldClose(_window);
 }
 
-GLFWwindow *Window::getHandle() {
-    return _window;
-}
-
 // MainWindow
 // ----------
 
@@ -52,7 +48,7 @@ void MainWindow::framebuffer_size_callback(GLFWwindow *window, int width, int he
     glViewport(0, 0, width, height);
 }
 
-void MainWindow::key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int) {
     if (key == GLFW_KEY_A && action == GLFW_PRESS) {
         auto* mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
         mainWindow->switchEntity();
@@ -75,8 +71,10 @@ void MainWindow::render() {
 
 // EntityWindow
 // ------------
+int const EntityWindow::EN_HEIGHT = 400;
+int const EntityWindow::EN_WIDTH = 400;
 
-EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "Create Entity") {
+EntityWindow::EntityWindow(MainWindow *mainWindow): Window(EN_WIDTH, EN_HEIGHT, "Create Entity") {
     // init window
     glfwSetWindowCloseCallback(_window, window_close_callback);
     glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
@@ -90,6 +88,9 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "C
     _lightCube = std::make_unique<Cube>(0.5f);
     _lightCube->position = glm::vec3(5.0f, 3.0f, 4.0f);
 
+    // init quad
+    _quad[0] = std::make_unique<Quad>(-1.0f, 0.0f, 1.0f, 0.0f);
+
     // init shader
     _primitiveShader = std::make_unique<GLSLProgram>();
     _primitiveShader->attachVertexShaderFromFile("../glsl/primitive.vert");
@@ -100,12 +101,22 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(ENWIDTH, ENHEIGHT, "C
     _cubeShader->attachVertexShaderFromFile("../glsl/simple.vert");
     _cubeShader->attachFragmentShaderFromFile("../glsl/simple.frag");
     _cubeShader->link();
+    _quadShader = std::make_unique<GLSLProgram>();
+    _quadShader->attachVertexShaderFromFile("../glsl/quad.vert");
+    _quadShader->attachFragmentShaderFromFile("../glsl/quad.frag");
+    _quadShader->link();
     initNormalShader();
+
+    // init framebuffer and its texture
+    _framebuffer = std::make_unique<Framebuffer>();
+    _texture = std::make_unique<Texture2D>(
+            GL_RGBA, EN_WIDTH, EN_HEIGHT, GL_RGBA, GL_FLOAT);
+    _framebuffer->attachTexture2D(*_texture, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D);
 
     // init camera
     _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
-                                                  (float)ENWIDTH / ENHEIGHT, .1f, 10000.0f);
-    _camera->position = glm::vec3(8.0f, 7.0f, 10.0f);
+                                                  (float)EN_WIDTH / EN_HEIGHT, .1f, 10000.0f);
+    _camera->position = glm::vec3(5.0f, 4.0f, 4.0f);
 
     // init light
     _light.color = glm::vec3(0.3f, 0.4f, 0.8f);
@@ -124,11 +135,17 @@ void EntityWindow::render() {
     _deltaTime = currentFrame - _lastFrame;
     _lastFrame = currentFrame;
 
+    // rotate
     _cube->rotation = glm::angleAxis((float)currentFrame, _cube->getDefaultUp());
     _lightCube->position = _light.position;
 
     glfwMakeContextCurrent(_window);
-    glClearColor(.0f, .0f, .0f, 1.0f);
+    /* begin render */
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    _framebuffer->bind();
+    glClearColor(0.3f, .3f, .3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // draw point light cube (for debug)
@@ -155,8 +172,15 @@ void EntityWindow::render() {
     _primitiveShader->setUniformVec3("viewPos", _camera->position);
 //    _cube->draw();
     _sphere->draw();
+    _framebuffer->unbind();
+
+    _quadShader->use();
+    _quadShader->setUniformInt("aTex", 0);
+    _texture->bind(0);
+    _quad[0]->draw();
 
 //    std::cout << glGetError() << std::endl;
+    /* end render */
     glfwSwapBuffers(_window);
 }
 
@@ -166,7 +190,7 @@ EntityWindow::~EntityWindow() {
     glfwDestroyWindow(_window);
 }
 
-void EntityWindow::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+void EntityWindow::framebuffer_size_callback(GLFWwindow *window, int, int height) {
     glfwMakeContextCurrent(window);
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, height * EN_WIDTH / EN_HEIGHT, height);
 }

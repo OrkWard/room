@@ -14,6 +14,8 @@
 #include "glsl_program.h"
 #include "camera.h"
 #include "light.h"
+#include "framebuffer.h"
+#include "texture2d.h"
 
 class Window;
 class MainWindow;
@@ -29,7 +31,6 @@ public:
     Window(int width, int height, char const *title);
     void makeCurrent();
     int shouldClose();
-    GLFWwindow* getHandle();
     virtual void render() = 0;
 protected:
     void initNormalShader();
@@ -49,6 +50,9 @@ private:
 };
 
 class EntityWindow: public Window {
+public:
+    static const int EN_WIDTH;
+    static const int EN_HEIGHT;
 private:
     std::unique_ptr<GLSLProgram> _primitiveShader;
     std::unique_ptr<Cube> _cube;
@@ -58,9 +62,11 @@ private:
     std::unique_ptr<PerspectiveCamera> _camera;
     AmbientLight _ambient;
     PointLight _light;
-public:
-    static const int ENWIDTH = 400;
-    static const int ENHEIGHT = 400;
+
+    std::unique_ptr<Framebuffer> _framebuffer;
+    std::unique_ptr<Texture2D> _texture;
+    std::unique_ptr<GLSLProgram> _quadShader;
+    std::unique_ptr<Quad> _quad[6];
 public:
     explicit EntityWindow(MainWindow* mainWindow);
     ~EntityWindow();
