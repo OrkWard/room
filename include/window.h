@@ -43,6 +43,7 @@ public:
     MainWindow(int width, int height);
     ~MainWindow();
     void switchEntity();
+    void chooseEntity(double xPos, double yPos);
     void render() override;
 private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -55,7 +56,7 @@ public:
     static const int EN_HEIGHT;
 private:
     std::unique_ptr<GLSLProgram> _primitiveShader;
-    std::unique_ptr<GLSLProgram> _cubeShader;
+    std::unique_ptr<GLSLProgram> _simpleShader;
     std::unique_ptr<Cube> _lightCube;
     std::unique_ptr<PerspectiveCamera> _camera;
     AmbientLight _ambient;
@@ -73,13 +74,15 @@ private:
     std::unique_ptr<Texture2D> _depthTexture;
     std::unique_ptr<GLSLProgram> _quadShader;
     std::unique_ptr<Quad> _quad[4];
+    int chosenEntity;
 public:
     explicit EntityWindow(MainWindow* mainWindow);
     ~EntityWindow();
     void render() override;
+    void chooseEntity(double xPos, double yPos);
 private:
     static void window_close_callback(GLFWwindow *window);
-    static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+    static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos);
     // draw point light cube (for debug)
     void drawLightCube();
     void drawEntity(const Entity& entity, int index);

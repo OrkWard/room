@@ -39,10 +39,8 @@ Cube::Cube(float side) {
 }
 
 void Cube::draw() const {
-    glEnable(GL_DEPTH_TEST);
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
-    glDisable(GL_DEPTH_TEST);
 }
 
 glm::mat4 Entity::getModelMat() const {
@@ -118,10 +116,8 @@ Sphere::Sphere(float radius, int sectors, int stacks) {
 }
 
 void Sphere::draw() const {
-    glEnable(GL_DEPTH_TEST);
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, nullptr);
-    glDisable(GL_DEPTH_TEST);
 }
 
 Quad::Quad(float left, float right, float up, float bottom) {
@@ -217,8 +213,6 @@ Frustum::Frustum(float base, float top, float height, int sectors) {
 }
 
 void Frustum::draw() const {
-    glEnable(GL_DEPTH_TEST);
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, nullptr);
-    glDisable(GL_DEPTH_TEST);
 }

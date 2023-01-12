@@ -69,16 +69,24 @@ void MainWindow::render() {
     glfwSwapBuffers(_window);
 }
 
+void MainWindow::chooseEntity(double xPos, double yPos) {
+    entityWindow->chooseEntity(xPos, yPos);
+}
+
 // EntityWindow
 // ------------
 int const EntityWindow::EN_HEIGHT = 800;
 int const EntityWindow::EN_WIDTH = 800;
 
-EntityWindow::EntityWindow(MainWindow *mainWindow): Window(EN_WIDTH, EN_HEIGHT, "Create Entity") {
+EntityWindow::EntityWindow(MainWindow *mainWindow):
+        Window(EN_WIDTH, EN_HEIGHT, "Create Entity"),
+        chosenEntity(-1)
+    {
     // init window
     glfwSetWindowCloseCallback(_window, window_close_callback);
-    glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(_window, cursor_position_callback);
     glfwSetWindowUserPointer(_window, mainWindow);
+    glfwSetWindowAttrib(_window, GLFW_RESIZABLE, false);
 
     // init entities
     _cube = std::make_unique<Cube>(2.0f);
@@ -102,10 +110,10 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(EN_WIDTH, EN_HEIGHT, 
     _primitiveShader->attachGeometryShaderFromFile("../glsl/primitive.geom");
     _primitiveShader->attachFragmentShaderFromFile("../glsl/primitive.frag");
     _primitiveShader->link();
-    _cubeShader = std::make_unique<GLSLProgram>();
-    _cubeShader->attachVertexShaderFromFile("../glsl/simple.vert");
-    _cubeShader->attachFragmentShaderFromFile("../glsl/simple.frag");
-    _cubeShader->link();
+    _simpleShader = std::make_unique<GLSLProgram>();
+    _simpleShader->attachVertexShaderFromFile("../glsl/simple.vert");
+    _simpleShader->attachFragmentShaderFromFile("../glsl/simple.frag");
+    _simpleShader->link();
     _quadShader = std::make_unique<GLSLProgram>();
     _quadShader->attachVertexShaderFromFile("../glsl/quad.vert");
     _quadShader->attachFragmentShaderFromFile("../glsl/quad.frag");
@@ -168,10 +176,10 @@ void EntityWindow::render() {
 }
 
 void EntityWindow::drawLightCube() {
-    _cubeShader->use();
-    _cubeShader->setUniformMat4("model", _lightCube->getModelMat());
-    _cubeShader->setUniformMat4("view", _camera->getViewMatrix());
-    _cubeShader->setUniformMat4("project", _camera->getProjectionMatrix());
+    _simpleShader->use();
+    _simpleShader->setUniformMat4("model", _lightCube->getModelMat());
+    _simpleShader->setUniformMat4("view", _camera->getViewMatrix());
+    _simpleShader->setUniformMat4("project", _camera->getProjectionMatrix());
     _lightCube->draw();
 }
 
@@ -180,6 +188,15 @@ void EntityWindow::drawEntity(const Entity &entity, int index) {
     _framebuffer->bind();
     glClearColor(0.0f, .0f, .0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if (chosenEntity == index) {
+        glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(1.1f));
+        _simpleShader->use();
+        _simpleShader->setUniformMat4("model", entity.getModelMat() * scaleMat);
+        _simpleShader->setUniformMat4("view", _camera->getViewMatrix());
+        _simpleShader->setUniformMat4("project", _camera->getProjectionMatrix());
+        entity.draw();
+    }
 
     _primitiveShader->use();
     _primitiveShader->setUniformMat4("model", entity.getModelMat());
@@ -195,7 +212,9 @@ void EntityWindow::drawEntity(const Entity &entity, int index) {
     _primitiveShader->setUniformVec3("material.ks", entity.ks);
     _primitiveShader->setUniformFloat("material.ns", entity.ns);
     _primitiveShader->setUniformVec3("viewPos", _camera->position);
+    glEnable(GL_DEPTH_TEST);
     entity.draw();
+    glDisable(GL_DEPTH_TEST);
 
     _framebuffer->unbind();
     _quadShader->use();
@@ -210,7 +229,18 @@ EntityWindow::~EntityWindow() {
     glfwDestroyWindow(_window);
 }
 
-void EntityWindow::framebuffer_size_callback(GLFWwindow *window, int, int height) {
-    glfwMakeContextCurrent(window);
-    glViewport(0, 0, height * EN_WIDTH / EN_HEIGHT, height);
+void EntityWindow::cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
+    auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
+    mainWindow->chooseEntity(xpos, ypos);
+}
+
+void EntityWindow::chooseEntity(double xPos, double yPos) {
+    if (xPos < EN_WIDTH / 2 && yPos < EN_HEIGHT / 2)
+        chosenEntity = 0;
+    else if (xPos >= EN_WIDTH / 2 && yPos < EN_HEIGHT / 2)
+        chosenEntity = 1;
+    else if (xPos < EN_WIDTH / 2 && yPos >= EN_HEIGHT / 2)
+        chosenEntity = 2;
+    else
+        chosenEntity = 3;
 }
