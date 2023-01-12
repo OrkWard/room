@@ -6,7 +6,6 @@
 #include <glad/glad.h>
 
 #include "bounding_box.h"
-#include "transform.h"
 #include "vertex.h"
 
 class Model {
@@ -37,7 +36,7 @@ public:
     const std::vector<Vertex>& getVertices() const { return _vertices; }
     const Vertex& getVertex(int i) const { return _vertices[i]; }
 public:
-    Transform transform;
+//    Transform transform;
 
 protected:
     // vertices of the table represented in model's own coordinate
