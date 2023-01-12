@@ -64,7 +64,8 @@ private:
     PointLight _light;
 
     std::unique_ptr<Framebuffer> _framebuffer;
-    std::unique_ptr<Texture2D> _texture;
+    std::unique_ptr<Texture2D> _colorTexture;
+    std::unique_ptr<Texture2D> _depthTexture;
     std::unique_ptr<GLSLProgram> _quadShader;
     std::unique_ptr<Quad> _quad[6];
 public:

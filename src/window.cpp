@@ -109,9 +109,13 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(EN_WIDTH, EN_HEIGHT, 
 
     // init framebuffer and its texture
     _framebuffer = std::make_unique<Framebuffer>();
-    _texture = std::make_unique<Texture2D>(
+    _colorTexture = std::make_unique<Texture2D>(
             GL_RGBA, EN_WIDTH, EN_HEIGHT, GL_RGBA, GL_FLOAT);
-    _framebuffer->attachTexture2D(*_texture, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D);
+    _depthTexture = std::make_unique<Texture2D>(
+            GL_DEPTH_COMPONENT32, EN_WIDTH, EN_HEIGHT,
+            GL_DEPTH_COMPONENT, GL_FLOAT);
+    _framebuffer->attachTexture2D(*_colorTexture, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D);
+    _framebuffer->attachTexture2D(*_depthTexture, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D);
 
     // init camera
     _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
@@ -136,7 +140,7 @@ void EntityWindow::render() {
     _lastFrame = currentFrame;
 
     // rotate
-    _cube->rotation = glm::angleAxis((float)currentFrame, _cube->getDefaultUp());
+    _cube->rotation = glm::angleAxis((float)currentFrame / 2, _cube->getDefaultUp());
     _lightCube->position = _light.position;
 
     glfwMakeContextCurrent(_window);
@@ -145,7 +149,7 @@ void EntityWindow::render() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     _framebuffer->bind();
-    glClearColor(0.3f, .3f, .3f, 1.0f);
+    glClearColor(0.0f, .0f, .0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // draw point light cube (for debug)
@@ -176,7 +180,7 @@ void EntityWindow::render() {
 
     _quadShader->use();
     _quadShader->setUniformInt("aTex", 0);
-    _texture->bind(0);
+    _colorTexture->bind(0);
     _quad[0]->draw();
 
 //    std::cout << glGetError() << std::endl;

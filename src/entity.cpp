@@ -58,7 +58,7 @@ glm::vec3 Entity::getDefaultUp() {
 Sphere::Sphere(float radius, int sectors, int stacks) {
     std::vector<float> vertices;
 
-    for (int i = 0; i < stacks; ++i) {
+    for (int i = 0; i <= stacks; ++i) {
         float stackAngle = glm::pi<float>() * (0.5f - (float)i / stacks);
         float z, xy;
         z = radius * glm::sin(stackAngle);
@@ -84,7 +84,7 @@ Sphere::Sphere(float radius, int sectors, int stacks) {
         int k1 = i * (sectors + 1);
         int k2 = k1 + sectors + 1;
 
-        for (int j = 0; j <= sectors; ++j, ++k1, ++k2) {
+        for (int j = 0; j < sectors; ++j, ++k1, ++k2) {
             if (i != 0) {
                 indices.push_back(k1);
                 indices.push_back(k1 + 1);
