@@ -22,13 +22,13 @@ public:
 public:
     glm::mat4 getModelMat() const;
     static glm::vec3 getDefaultUp();
-    virtual void draw() = 0;
+    virtual void draw() const = 0;
 };
 
 class Cube: public Entity {
 public:
     explicit Cube(float side);
-    void draw() override;
+    void draw() const override;
 };
 
 
@@ -37,7 +37,7 @@ private:
     long _count;
 public:
     explicit Sphere(float radius, int sectors, int stacks);
-    void draw() override;
+    void draw() const override;
 };
 
 class Quad {

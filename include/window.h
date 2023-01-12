@@ -75,6 +75,9 @@ public:
 private:
     static void window_close_callback(GLFWwindow *window);
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+    // draw point light cube (for debug)
+    void drawLightCube();
+    void drawEntity(const Entity& entity, int index);
 };
 
 #endif //ROOM_WINDOW_H

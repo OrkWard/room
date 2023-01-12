@@ -90,6 +90,7 @@ EntityWindow::EntityWindow(MainWindow *mainWindow): Window(EN_WIDTH, EN_HEIGHT, 
 
     // init quad
     _quad[0] = std::make_unique<Quad>(-1.0f, 0.0f, 1.0f, 0.0f);
+    _quad[1] = std::make_unique<Quad>(0.0f, 1.0f, 1.0f, 0.0f);
 
     // init shader
     _primitiveShader = std::make_unique<GLSLProgram>();
@@ -141,6 +142,7 @@ void EntityWindow::render() {
 
     // rotate
     _cube->rotation = glm::angleAxis((float)currentFrame / 2, _cube->getDefaultUp());
+    _sphere->rotation = glm::angleAxis((float)currentFrame / 2, _cube->getDefaultUp());
     _lightCube->position = _light.position;
 
     glfwMakeContextCurrent(_window);
@@ -148,20 +150,31 @@ void EntityWindow::render() {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    _framebuffer->bind();
-    glClearColor(0.0f, .0f, .0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // draw primitives
+    drawEntity(*_cube, 0);
+    drawEntity(*_sphere, 1);
 
-    // draw point light cube (for debug)
+//    std::cout << glGetError() << std::endl;
+    /* end render */
+    glfwSwapBuffers(_window);
+}
+
+void EntityWindow::drawLightCube() {
     _cubeShader->use();
     _cubeShader->setUniformMat4("model", _lightCube->getModelMat());
     _cubeShader->setUniformMat4("view", _camera->getViewMatrix());
     _cubeShader->setUniformMat4("project", _camera->getProjectionMatrix());
     _lightCube->draw();
+}
 
-    // draw primitives
+void EntityWindow::drawEntity(const Entity &entity, int index) {
+    // bind framebuffer and clear
+    _framebuffer->bind();
+    glClearColor(0.0f, .0f, .0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     _primitiveShader->use();
-    _primitiveShader->setUniformMat4("model", _cube->getModelMat());
+    _primitiveShader->setUniformMat4("model", entity.getModelMat());
     _primitiveShader->setUniformMat4("view", _camera->getViewMatrix());
     _primitiveShader->setUniformMat4("project", _camera->getProjectionMatrix());
     _primitiveShader->setUniformVec3("light.color", _light.color);
@@ -169,23 +182,18 @@ void EntityWindow::render() {
     _primitiveShader->setUniformFloat("light.intensity", _light.intensity);
     _primitiveShader->setUniformVec3("ambient.color", _ambient.color);
     _primitiveShader->setUniformFloat("ambient.intensity", _ambient.intensity);
-    _primitiveShader->setUniformVec3("material.ka", _cube->ka);
-    _primitiveShader->setUniformVec3("material.kd", _cube->kd);
-    _primitiveShader->setUniformVec3("material.ks", _cube->ks);
-    _primitiveShader->setUniformFloat("material.ns", _cube->ns);
+    _primitiveShader->setUniformVec3("material.ka", entity.ka);
+    _primitiveShader->setUniformVec3("material.kd", entity.kd);
+    _primitiveShader->setUniformVec3("material.ks", entity.ks);
+    _primitiveShader->setUniformFloat("material.ns", entity.ns);
     _primitiveShader->setUniformVec3("viewPos", _camera->position);
-//    _cube->draw();
-    _sphere->draw();
-    _framebuffer->unbind();
+    entity.draw();
 
+    _framebuffer->unbind();
     _quadShader->use();
     _quadShader->setUniformInt("aTex", 0);
     _colorTexture->bind(0);
-    _quad[0]->draw();
-
-//    std::cout << glGetError() << std::endl;
-    /* end render */
-    glfwSwapBuffers(_window);
+    _quad[index]->draw();
 }
 
 EntityWindow::~EntityWindow() {

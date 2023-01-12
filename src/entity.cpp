@@ -38,7 +38,7 @@ Cube::Cube(float side) {
     glBindVertexArray(0);
 }
 
-void Cube::draw() {
+void Cube::draw() const {
     glEnable(GL_DEPTH_TEST);
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
@@ -117,7 +117,7 @@ Sphere::Sphere(float radius, int sectors, int stacks) {
     glBindVertexArray(0);
 }
 
-void Sphere::draw() {
+void Sphere::draw() const {
     glEnable(GL_DEPTH_TEST);
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, nullptr);
