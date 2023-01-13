@@ -20,6 +20,7 @@ public:
     glm::vec3 ks = glm::vec3(1.0f);
     float ns = 32.0f;
 public:
+    virtual ~Entity() = default;
     glm::mat4 getModelMat() const;
     static glm::vec3 getDefaultUp();
     virtual void draw() const = 0;
@@ -28,6 +29,7 @@ public:
 class Cube: public Entity {
 public:
     explicit Cube(float side);
+    ~Cube() override;
     void draw() const override;
 };
 
@@ -37,6 +39,7 @@ private:
     long _count;
 public:
     Sphere(float radius, int sectors, int stacks);
+    ~Sphere() override;
     void draw() const override;
 };
 
@@ -45,6 +48,7 @@ private:
     long _count;
 public:
     Frustum(float base, float top, float height, int sectors);
+    ~Frustum() override;
     void draw() const override;
 };
 
@@ -55,5 +59,6 @@ private:
     unsigned int _ebo = 0;
 public:
     Quad(float left, float right, float up, float bottom);
+    ~Quad();
     void draw() const;
 };

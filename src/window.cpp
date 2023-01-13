@@ -33,13 +33,14 @@ int Window::shouldClose() {
 // MainWindow
 // ----------
 
-MainWindow::MainWindow(int width, int height): Window(width, height, "Room") {
+MainWindow::MainWindow(int width, int height): Window(width, height, "Room"), _chosenEntity(-1) {
+    // init window
     glfwSetKeyCallback(_window, key_callback);
     glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
 }
 
 MainWindow::~MainWindow() {
-    entityWindow = nullptr;
+    _entityWindow = nullptr;
     glfwDestroyWindow(_window);
 }
 
@@ -56,21 +57,25 @@ void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int)
 }
 
 void MainWindow::switchEntity() {
-    if (!entityWindow)
-        entityWindow = std::make_unique<EntityWindow>(this);
+    if (!_entityWindow)
+        _entityWindow = std::make_unique<EntityWindow>(this);
     else
-        entityWindow = nullptr;
+        _entityWindow = nullptr;
 }
 
 void MainWindow::render() {
     glfwMakeContextCurrent(_window);
-    if (entityWindow)
-        entityWindow->render();
+    if (_entityWindow)
+        _entityWindow->render();
     glfwSwapBuffers(_window);
 }
 
 void MainWindow::chooseEntity(double xPos, double yPos) {
-    entityWindow->chooseEntity(xPos, yPos);
+    _chosenEntity = _entityWindow->chooseEntity(xPos, yPos);
+}
+
+void MainWindow::addEntity() {
+    std::cout << _chosenEntity << std::endl;
 }
 
 // EntityWindow
@@ -85,6 +90,7 @@ EntityWindow::EntityWindow(MainWindow *mainWindow):
     // init window
     glfwSetWindowCloseCallback(_window, window_close_callback);
     glfwSetCursorPosCallback(_window, cursor_position_callback);
+    glfwSetMouseButtonCallback(_window, mouse_button_callback);
     glfwSetWindowUserPointer(_window, mainWindow);
     glfwSetWindowAttrib(_window, GLFW_RESIZABLE, false);
 
@@ -234,13 +240,20 @@ void EntityWindow::cursor_position_callback(GLFWwindow *window, double xpos, dou
     mainWindow->chooseEntity(xpos, ypos);
 }
 
-void EntityWindow::chooseEntity(double xPos, double yPos) {
-    if (xPos < EN_WIDTH / 2 && yPos < EN_HEIGHT / 2)
+int EntityWindow::chooseEntity(double xPos, double yPos) {
+    if (static_cast<int>(xPos) < EN_WIDTH / 2 && static_cast<int>(yPos) < EN_HEIGHT / 2)
         chosenEntity = 0;
-    else if (xPos >= EN_WIDTH / 2 && yPos < EN_HEIGHT / 2)
+    else if (static_cast<int>(xPos) >= EN_WIDTH / 2 && static_cast<int>(yPos) < EN_HEIGHT / 2)
         chosenEntity = 1;
-    else if (xPos < EN_WIDTH / 2 && yPos >= EN_HEIGHT / 2)
+    else if (static_cast<int>(xPos) < EN_WIDTH / 2 && static_cast<int>(yPos) >= EN_HEIGHT / 2)
         chosenEntity = 2;
     else
         chosenEntity = 3;
+    return chosenEntity;
+}
+
+void EntityWindow::mouse_button_callback(GLFWwindow *window, int button, int action, int) {
+    auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        mainWindow->addEntity();
 }

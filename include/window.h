@@ -37,14 +37,17 @@ protected:
 };
 
 class MainWindow: public Window {
-private:
-    std::unique_ptr<EntityWindow> entityWindow;
 public:
     MainWindow(int width, int height);
     ~MainWindow();
     void switchEntity();
     void chooseEntity(double xPos, double yPos);
+    void addEntity();
     void render() override;
+private:
+    std::unique_ptr<EntityWindow> _entityWindow;
+    std::vector<std::unique_ptr<Entity>> _entites;
+    int _chosenEntity;
 private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
@@ -79,10 +82,11 @@ public:
     explicit EntityWindow(MainWindow* mainWindow);
     ~EntityWindow();
     void render() override;
-    void chooseEntity(double xPos, double yPos);
+    int chooseEntity(double xPos, double yPos);
 private:
     static void window_close_callback(GLFWwindow *window);
     static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos);
+    static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
     // draw point light cube (for debug)
     void drawLightCube();
     void drawEntity(const Entity& entity, int index);

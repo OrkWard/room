@@ -43,6 +43,12 @@ void Cube::draw() const {
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 }
 
+Cube::~Cube() {
+    glDeleteVertexArrays(1, &_vao);
+    glDeleteBuffers(1, &_vbo);
+    glDeleteBuffers(1, &_ebo);
+}
+
 glm::mat4 Entity::getModelMat() const {
     return glm::translate(glm::mat4(1.0f), position) *
            glm::mat4_cast(rotation) *
@@ -120,6 +126,12 @@ void Sphere::draw() const {
     glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, nullptr);
 }
 
+Sphere::~Sphere() {
+    glDeleteVertexArrays(1, &_vao);
+    glDeleteBuffers(1, &_vbo);
+    glDeleteBuffers(1, &_ebo);
+}
+
 Quad::Quad(float left, float right, float up, float bottom) {
     std::vector<float> vertices = {
             left, up, 0.0f, 1.0f,
@@ -152,6 +164,12 @@ Quad::Quad(float left, float right, float up, float bottom) {
 void Quad::draw() const {
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+}
+
+Quad::~Quad() {
+    glDeleteVertexArrays(1, &_vao);
+    glDeleteBuffers(1, &_vbo);
+    glDeleteBuffers(1, &_ebo);
 }
 
 Frustum::Frustum(float base, float top, float height, int sectors) {
@@ -215,4 +233,10 @@ Frustum::Frustum(float base, float top, float height, int sectors) {
 void Frustum::draw() const {
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, nullptr);
+}
+
+Frustum::~Frustum() {
+    glDeleteVertexArrays(1, &_vao);
+    glDeleteBuffers(1, &_vbo);
+    glDeleteBuffers(1, &_ebo);
 }
