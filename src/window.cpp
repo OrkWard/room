@@ -55,6 +55,8 @@ MainWindow::MainWindow(int width, int height): Window(width, height, "Room"), _c
 
     ImGui_ImplGlfw_InitForOpenGL(_window, true);
     ImGui_ImplOpenGL3_Init();
+    ImFont* font = ImGui::GetIO().Fonts->AddFontFromFileTTF("../media/font/segoeui.ttf", 20.0f);
+    IM_ASSERT(font != nullptr);
 
     // init shader
     _primitiveShader = std::make_unique<GLSLProgram>();
