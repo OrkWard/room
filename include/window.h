@@ -16,6 +16,7 @@
 #include "light.h"
 #include "framebuffer.h"
 #include "texture2d.h"
+#include "utility.h"
 
 class Window;
 class MainWindow;
@@ -44,9 +45,14 @@ public:
     void chooseEntity(double xPos, double yPos);
     void addEntity();
     void render() override;
+    void setCamera(int width, int height);
 private:
     std::unique_ptr<EntityWindow> _entityWindow;
-    std::vector<std::unique_ptr<Entity>> _entites;
+    std::vector<Entity*> _entites;
+    std::unique_ptr<GLSLProgram> _primitiveShader;
+    std::unique_ptr<PerspectiveCamera> _camera;
+    AmbientLight _ambient;
+    PointLight _light;
     int _chosenEntity;
 private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);

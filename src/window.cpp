@@ -37,6 +37,31 @@ MainWindow::MainWindow(int width, int height): Window(width, height, "Room"), _c
     // init window
     glfwSetKeyCallback(_window, key_callback);
     glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
+
+    // glad: load all OpenGL function pointers
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        exit(-1);
+    }
+
+    // init shader
+    _primitiveShader = std::make_unique<GLSLProgram>();
+    _primitiveShader->attachVertexShaderFromFile("../glsl/primitive.vert");
+    _primitiveShader->attachGeometryShaderFromFile("../glsl/primitive.geom");
+    _primitiveShader->attachFragmentShaderFromFile("../glsl/primitive.frag");
+    _primitiveShader->link();
+    initNormalShader();
+
+    // init light
+    _light.color = glm::vec3(0.3f, 0.4f, 0.8f);
+    _light.position = glm::vec3(3.0f, -3.0f, 3.0f);
+    _ambient.color = glm::vec3(0.3f, 0.4f, 0.8f);
+
+    // init camera
+    _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
+                                                  (float)SCR_WIDTH / SCR_HEIGHT, .1f, 10000.0f);
+    _camera->position = glm::vec3(5.0f, 4.0f, 4.0f);
 }
 
 MainWindow::~MainWindow() {
@@ -47,6 +72,8 @@ MainWindow::~MainWindow() {
 void MainWindow::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glfwMakeContextCurrent(window);
     glViewport(0, 0, width, height);
+    auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
+    mainWindow->setCamera(width, height);
 }
 
 void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int) {
@@ -64,9 +91,34 @@ void MainWindow::switchEntity() {
 }
 
 void MainWindow::render() {
-    glfwMakeContextCurrent(_window);
+    // render entity window
     if (_entityWindow)
         _entityWindow->render();
+
+    glfwMakeContextCurrent(_window);
+    glClearColor(0.0f, .0f, .0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    for (const auto& entity : _entites) {
+        _primitiveShader->use();
+        _primitiveShader->setUniformMat4("model", entity->getModelMat());
+        _primitiveShader->setUniformMat4("view", _camera->getViewMatrix());
+        _primitiveShader->setUniformMat4("project", _camera->getProjectionMatrix());
+        _primitiveShader->setUniformVec3("light.color", _light.color);
+        _primitiveShader->setUniformVec3("light.position", _light.position);
+        _primitiveShader->setUniformFloat("light.intensity", _light.intensity);
+        _primitiveShader->setUniformVec3("ambient.color", _ambient.color);
+        _primitiveShader->setUniformFloat("ambient.intensity", _ambient.intensity);
+        _primitiveShader->setUniformVec3("material.ka", entity->ka);
+        _primitiveShader->setUniformVec3("material.kd", entity->kd);
+        _primitiveShader->setUniformVec3("material.ks", entity->ks);
+        _primitiveShader->setUniformFloat("material.ns", entity->ns);
+        _primitiveShader->setUniformVec3("viewPos", _camera->position);
+        glEnable(GL_DEPTH_TEST);
+        entity->draw();
+        glDisable(GL_DEPTH_TEST);
+    }
+
     glfwSwapBuffers(_window);
 }
 
@@ -75,7 +127,22 @@ void MainWindow::chooseEntity(double xPos, double yPos) {
 }
 
 void MainWindow::addEntity() {
-    std::cout << _chosenEntity << std::endl;
+    Entity *entity;
+    if (_chosenEntity == 0)
+        entity = new Cube(4.0f);
+    else if (_chosenEntity == 1)
+        entity = new Sphere(2.0f, 36, 36);
+    else if (_chosenEntity == 2)
+        entity = new Frustum(2.0f, 2.0f, 4.0f, 36);
+    else if (_chosenEntity == 3)
+        entity = new Frustum(2.0f, 0.0f, 4.0f, 36);
+    _entites.push_back(entity);
+}
+
+void MainWindow::setCamera(int width, int height) {
+    _camera = std::make_unique<PerspectiveCamera>(*_camera);
+    _camera->project = glm::perspective(glm::radians(50.0f),
+                                        static_cast<float>(width) / height, .1f, 10000.f);
 }
 
 // EntityWindow

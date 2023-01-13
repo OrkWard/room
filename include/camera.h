@@ -19,7 +19,7 @@ public:
 
 class PerspectiveCamera : public Camera {
 public:
-    glm::mat4 project{};
+    glm::mat4 project;
 public:
 	PerspectiveCamera(float fovy, float aspect, float znear, float zfar);
 

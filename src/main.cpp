@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "utility.h"
 #include "window.h"
 
 int main()
@@ -13,15 +12,6 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     MainWindow mainWindow(SCR_WIDTH, SCR_HEIGHT);
-    mainWindow.makeCurrent();
-
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
 
     // render loop
     // -----------
