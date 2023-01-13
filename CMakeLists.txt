@@ -11,9 +11,11 @@ include_directories(
         "${CMAKE_CURRENT_LIST_DIR}/include"
         "${EXTERN_DIR}/glfw/include"
         "${EXTERN_DIR}/glm"
+        ${EXTERN_DIR}/imgui
 )
 
-add_subdirectory("${EXTERN_DIR}/glfw")
+add_subdirectory(${EXTERN_DIR}/glfw)
+add_subdirectory(${EXTERN_DIR}/imgui)
 
 set(TARGET_NAME room_lib)
 add_library(
@@ -40,4 +42,5 @@ target_link_libraries(
         ${TARGET_NAME}
         glfw
         room_lib
+        imgui
 )

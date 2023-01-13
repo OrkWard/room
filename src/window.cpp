@@ -10,7 +10,6 @@ Window::Window(int width, int height, char const *title) {
         glfwTerminate();
         exit(-1);
     }
-    glfwSetWindowUserPointer(_window, this);
     glfwMakeContextCurrent(_window);
 }
 
@@ -35,15 +34,27 @@ int Window::shouldClose() {
 
 MainWindow::MainWindow(int width, int height): Window(width, height, "Room"), _chosenEntity(-1) {
     // init window
+    glfwSetWindowUserPointer(_window, this);
     glfwSetKeyCallback(_window, key_callback);
     glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
+    // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         exit(-1);
     }
+
+    // imgui: initialize and set backends
+    // ----------------------------------
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+//    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(_window, true);
+    ImGui_ImplOpenGL3_Init();
 
     // init shader
     _primitiveShader = std::make_unique<GLSLProgram>();
@@ -66,6 +77,9 @@ MainWindow::MainWindow(int width, int height): Window(width, height, "Room"), _c
 
 MainWindow::~MainWindow() {
     _entityWindow = nullptr;
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwDestroyWindow(_window);
 }
 
@@ -91,13 +105,15 @@ void MainWindow::switchEntity() {
 }
 
 void MainWindow::render() {
-    // render entity window
-    if (_entityWindow)
-        _entityWindow->render();
-
     glfwMakeContextCurrent(_window);
     glClearColor(0.0f, .0f, .0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::ShowDemoWindow();
 
     for (const auto& entity : _entites) {
         _primitiveShader->use();
@@ -116,10 +132,26 @@ void MainWindow::render() {
         _primitiveShader->setUniformVec3("viewPos", _camera->position);
         glEnable(GL_DEPTH_TEST);
         entity->draw();
+        opengl_debug("after draw");
         glDisable(GL_DEPTH_TEST);
     }
 
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        GLFWwindow* backup_current_context = glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        glfwMakeContextCurrent(backup_current_context);
+    }
+
     glfwSwapBuffers(_window);
+
+    // render entity window
+    if (_entityWindow)
+        _entityWindow->render();
 }
 
 void MainWindow::chooseEntity(double xPos, double yPos) {
@@ -127,9 +159,10 @@ void MainWindow::chooseEntity(double xPos, double yPos) {
 }
 
 void MainWindow::addEntity() {
+    glfwMakeContextCurrent(_window);
     Entity *entity;
     if (_chosenEntity == 0)
-        entity = new Cube(4.0f);
+        entity = new Cube(2.0f);
     else if (_chosenEntity == 1)
         entity = new Sphere(2.0f, 36, 36);
     else if (_chosenEntity == 2)
@@ -220,6 +253,7 @@ void EntityWindow::window_close_callback(GLFWwindow *window) {
 }
 
 void EntityWindow::render() {
+    glfwMakeContextCurrent(_window);
     // process time
     double currentFrame = glfwGetTime();
     _deltaTime = currentFrame - _lastFrame;
@@ -232,7 +266,6 @@ void EntityWindow::render() {
     _pyramid->rotation = glm::angleAxis((float)currentFrame / 2, _pyramid->getDefaultUp());
     _lightCube->position = _light.position;
 
-    glfwMakeContextCurrent(_window);
     /* begin render */
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -297,8 +330,6 @@ void EntityWindow::drawEntity(const Entity &entity, int index) {
 }
 
 EntityWindow::~EntityWindow() {
-    _cube = nullptr;
-    _primitiveShader = nullptr;
     glfwDestroyWindow(_window);
 }
 
