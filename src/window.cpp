@@ -40,6 +40,7 @@ MainWindow::MainWindow(int width, int height):
     glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
     glfwSetMouseButtonCallback(_window, mouse_button_callback);
     glfwSetCursorPosCallback(_window, cursor_position_callback);
+    glfwSetScrollCallback(_window, scroll_callback);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -96,17 +97,22 @@ void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int)
 
 void MainWindow::mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
     auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE && mainWindow->cameraMove != cameraStay)
+    if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE && mainWindow->cameraMove != cameraStay)
         mainWindow->cameraMove = cameraStay;
-    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && mods == GLFW_MOD_SHIFT)
+    else if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS && mods == GLFW_MOD_SHIFT)
         mainWindow->cameraMove = cameraTranslate;
-    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    else if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
         mainWindow->cameraMove = cameraRotate;
 }
 
 void MainWindow::cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
     auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
     mainWindow->setCameraMouse(xpos, ypos);
+}
+
+void MainWindow::scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+    auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
+    mainWindow->setCameraScroll(yoffset);
 }
 
 void MainWindow::switchEntity() {
@@ -208,6 +214,11 @@ void MainWindow::setCameraMouse(double xPos, double yPos) {
     }
     _xPos = xPos;
     _yPos = yPos;
+}
+
+void MainWindow::setCameraScroll(double offset) {
+    std::cout << offset << std::endl;
+    _camera->position += static_cast<float>(offset) * _camera->getFront() * SCROLL_SPEED;
 }
 
 MainWindow::~MainWindow() {

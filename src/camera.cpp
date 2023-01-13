@@ -18,6 +18,10 @@ glm::vec3 Camera::getRight() const {
     return glm::normalize(glm::cross(up, front));
 }
 
+glm::vec3 Camera::getFront() const {
+    return glm::normalize(center - position);
+}
+
 PerspectiveCamera::PerspectiveCamera(float fovy, float aspect, float znear, float zfar) {
     project = glm::perspective(fovy, aspect, znear, zfar);
 }
