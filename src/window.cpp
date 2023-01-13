@@ -190,13 +190,21 @@ void MainWindow::setCameraResize(int width, int height) {
 }
 
 void MainWindow::setCameraMouse(double xPos, double yPos) {
+    double deltaX = xPos - _xPos;
+    double deltaY = yPos - _yPos;
     if (cameraMove == cameraTranslate) {
-        double deltaX = xPos - _xPos;
-        double deltaY = yPos - _yPos;
         _camera->position += static_cast<float>(deltaX) * _camera->getRight() * TRANSLATE_SPEED;
         _camera->position += static_cast<float>(deltaY) * _camera->getUp() * TRANSLATE_SPEED;
         _camera->center += static_cast<float>(deltaX) * _camera->getRight() * TRANSLATE_SPEED;
         _camera->center += static_cast<float>(deltaY) * _camera->getUp() * TRANSLATE_SPEED;
+    }
+    else if (cameraMove == cameraRotate) {
+        glm::mat4 rotate(1.0f);
+        rotate = glm::translate(rotate, _camera->center);
+        rotate = glm::rotate(rotate, static_cast<float>(glm::radians(deltaY)), _camera->getRight());
+        rotate = glm::rotate(rotate, static_cast<float>(glm::radians(-deltaX)), _camera->getUp());
+        rotate = glm::translate(rotate, -_camera->center);
+        _camera->position = glm::vec3(rotate * glm::vec4(_camera->position, 1.0f));
     }
     _xPos = xPos;
     _yPos = yPos;
