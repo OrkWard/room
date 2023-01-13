@@ -32,11 +32,14 @@ int Window::shouldClose() {
 // MainWindow
 // ----------
 
-MainWindow::MainWindow(int width, int height): Window(width, height, "Room"), _chosenEntity(-1) {
+MainWindow::MainWindow(int width, int height):
+    Window(width, height, "Room"), _chosenEntity(-1), cameraMove(cameraStay) {
     // init window
     glfwSetWindowUserPointer(_window, this);
     glfwSetKeyCallback(_window, key_callback);
     glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
+    glfwSetMouseButtonCallback(_window, mouse_button_callback);
+    glfwSetCursorPosCallback(_window, cursor_position_callback);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -77,19 +80,11 @@ MainWindow::MainWindow(int width, int height): Window(width, height, "Room"), _c
     _camera->position = glm::vec3(5.0f, 4.0f, 4.0f);
 }
 
-MainWindow::~MainWindow() {
-    _entityWindow = nullptr;
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-    glfwDestroyWindow(_window);
-}
-
 void MainWindow::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glfwMakeContextCurrent(window);
     glViewport(0, 0, width, height);
     auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
-    mainWindow->setCamera(width, height);
+    mainWindow->setCameraResize(width, height);
 }
 
 void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int) {
@@ -97,6 +92,21 @@ void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int)
         auto* mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
         mainWindow->switchEntity();
     }
+}
+
+void MainWindow::mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+    auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE && mainWindow->cameraMove != cameraStay)
+        mainWindow->cameraMove = cameraStay;
+    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && mods == GLFW_MOD_SHIFT)
+        mainWindow->cameraMove = cameraTranslate;
+    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        mainWindow->cameraMove = cameraRotate;
+}
+
+void MainWindow::cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
+    auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
+    mainWindow->setCameraMouse(xpos, ypos);
 }
 
 void MainWindow::switchEntity() {
@@ -174,10 +184,30 @@ void MainWindow::addEntity() {
     _entites.push_back(entity);
 }
 
-void MainWindow::setCamera(int width, int height) {
-    _camera = std::make_unique<PerspectiveCamera>(*_camera);
+void MainWindow::setCameraResize(int width, int height) {
     _camera->project = glm::perspective(glm::radians(50.0f),
                                         static_cast<float>(width) / height, .1f, 10000.f);
+}
+
+void MainWindow::setCameraMouse(double xPos, double yPos) {
+    if (cameraMove == cameraTranslate) {
+        double deltaX = xPos - _xPos;
+        double deltaY = yPos - _yPos;
+        _camera->position += static_cast<float>(deltaX) * _camera->getRight() * TRANSLATE_SPEED;
+        _camera->position += static_cast<float>(deltaY) * _camera->getUp() * TRANSLATE_SPEED;
+        _camera->center += static_cast<float>(deltaX) * _camera->getRight() * TRANSLATE_SPEED;
+        _camera->center += static_cast<float>(deltaY) * _camera->getUp() * TRANSLATE_SPEED;
+    }
+    _xPos = xPos;
+    _yPos = yPos;
+}
+
+MainWindow::~MainWindow() {
+    _entityWindow = nullptr;
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    glfwDestroyWindow(_window);
 }
 
 // EntityWindow

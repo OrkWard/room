@@ -9,6 +9,15 @@ glm::mat4 Camera::getViewMatrix() const {
 	return glm::lookAt(position, center, up);
 }
 
+glm::vec3 Camera::getUp() const {
+    return glm::normalize(up);
+}
+
+glm::vec3 Camera::getRight() const {
+    glm::vec3 front = center - position;
+    return glm::normalize(glm::cross(up, front));
+}
+
 PerspectiveCamera::PerspectiveCamera(float fovy, float aspect, float znear, float zfar) {
     project = glm::perspective(fovy, aspect, znear, zfar);
 }

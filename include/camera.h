@@ -12,7 +12,8 @@ public:
 public:
     Camera();
 	glm::mat4 getViewMatrix() const;
-
+    glm::vec3 getUp() const;
+    glm::vec3 getRight() const;
 	virtual glm::mat4 getProjectionMatrix() const = 0;
 };
 

@@ -25,6 +25,13 @@ class Window;
 class MainWindow;
 class EntityWindow;
 
+enum CameraMove {
+    cameraStay = 0,
+    cameraScale = 1,
+    cameraRotate = 2,
+    cameraTranslate = 3
+};
+
 class Window {
 protected:
     GLFWwindow *_window;
@@ -42,13 +49,18 @@ protected:
 
 class MainWindow: public Window {
 public:
+    CameraMove cameraMove;
+public:
     MainWindow(int width, int height);
     ~MainWindow();
     void switchEntity();
     void chooseEntity(double xPos, double yPos);
     void addEntity();
     void render() override;
-    void setCamera(int width, int height);
+    // reset camera when resize
+    void setCameraResize(int width, int height);
+    // reset camera due to mouse
+    void setCameraMouse(double xPos, double yPos);
 private:
     std::unique_ptr<EntityWindow> _entityWindow;
     std::vector<Entity*> _entites;
@@ -57,8 +69,11 @@ private:
     AmbientLight _ambient;
     PointLight _light;
     int _chosenEntity;
+    double _xPos, _yPos;
 private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+    static void mouse_button_callback(GLFWwindow *window, int buttom, int action, int mods);
+    static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos);
     static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 };
 
