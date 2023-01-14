@@ -39,6 +39,14 @@ enum EntityMove {
     entityTranslate = 3
 };
 
+enum FocusAxis_ {
+    focusX = 1 << 0,
+    focusY = 1 << 1,
+    focusZ = 1 << 2
+};
+
+using FocusAxis = int;
+
 class Window {
 protected:
     GLFWwindow *_window;
@@ -59,8 +67,9 @@ protected:
 
 class MainWindow: public Window {
 public:
-    CameraMove cameraMove;
-    EntityMove entityMove;
+    CameraMove cameraMove = cameraStay;
+    EntityMove entityMove = entityStay;
+    FocusAxis focusAxis = 0;
 public:
     MainWindow(int width, int height);
     ~MainWindow();
@@ -70,7 +79,6 @@ public:
     void addEntity();
     void render() override;
     void setCursorPosition(double xPos, double yPos);
-    void setBeingPosition(double xPos, double yPos);
 
     // mouse viewport change event
     void setCameraResize(int width, int height);
@@ -81,8 +89,6 @@ public:
     void setEntityMouse(double xPos, double yPos);
 private:
     std::unique_ptr<EntityWindow> _entityWindow;
-
-    float _xBegin, _yBegin;
 
     std::unique_ptr<GLSLProgram> _primitiveShader;
     std::vector<Entity*> _entites;
@@ -98,7 +104,7 @@ private:
     PointLight _light;
 
     // entity to construct
-    int _chosenEntity;
+    int _chosenEntity = -1;
 private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     static void mouse_button_callback(GLFWwindow *window, int buttom, int action, int mods);

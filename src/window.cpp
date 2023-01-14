@@ -33,8 +33,7 @@ int Window::shouldClose() {
 // ----------
 
 MainWindow::MainWindow(int width, int height):
-    Window(width, height, "Room"), _chosenEntity(-1), cameraMove(cameraStay), _selectedEntity(-1),
-    entityMove(entityStay) {
+    Window(width, height, "Room"), _chosenEntity(-1), _selectedEntity(-1) {
     // init window
     glfwSetWindowUserPointer(_window, this);
     glfwSetKeyCallback(_window, key_callback);
@@ -86,7 +85,7 @@ MainWindow::MainWindow(int width, int height):
     // init camera
     _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
                                                   (float)SCR_WIDTH / SCR_HEIGHT, .1f, 10000.0f);
-    _camera->position = glm::vec3(5.0f, 4.0f, 4.0f);
+    _camera->position = glm::vec3(15.0f, 18.0f, 20.0f);
 }
 
 void MainWindow::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -103,20 +102,25 @@ void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int)
     if (key == GLFW_KEY_A && action == GLFW_PRESS) {
         mainWindow->switchEntity();
     }
-    else if (key == GLFW_KEY_G && action == GLFW_PRESS) {
+
+    if (key == GLFW_KEY_G && action == GLFW_PRESS) {
         mainWindow->entityMove = entityTranslate;
-        mainWindow->setBeingPosition(xPos, yPos);
     }
     else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
         mainWindow->entityMove = entityRotate;
-        mainWindow->setBeingPosition(xPos, yPos);
     }
     else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
         mainWindow->entityMove = entityScale;
-        mainWindow->setBeingPosition(xPos, yPos);
     }
     else if (action == GLFW_RELEASE)
         mainWindow->entityMove = entityStay;
+
+    if (key == GLFW_KEY_X && action == GLFW_PRESS)
+        mainWindow->focusAxis ^= focusX;
+    if (key == GLFW_KEY_Y && action == GLFW_PRESS)
+        mainWindow->focusAxis ^= focusY;
+    if (key == GLFW_KEY_Z && action == GLFW_PRESS)
+        mainWindow->focusAxis ^= focusZ;
 }
 
 void MainWindow::mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
@@ -168,9 +172,12 @@ void MainWindow::render() {
         if (ImGui::BeginListBox("Entity List")) {
             for (int i = 0; i < _entityNames.size(); ++i) {
                 const bool is_selected = (_selectedEntity == i);
-                if (ImGui::Selectable(_entityNames[i].c_str(), is_selected)) {
+                if (ImGui::Selectable((_entityNames[i] + std::to_string(i)).c_str(), is_selected)) {
                     _selectedEntity = i;
                 }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
             }
             ImGui::EndListBox();
         }
@@ -235,16 +242,16 @@ void MainWindow::addEntity() {
     std::string name;
     if (_chosenEntity == 0) {
         entity = new Cube(2.0f);
-        name = "Cube";
+        name = "Cube ";
     } else if (_chosenEntity == 1) {
         entity = new Sphere(2.0f, 36, 36);
-        name = "Sphere";
+        name = "Sphere ";
     } else if (_chosenEntity == 2) {
         entity = new Frustum(2.0f, 2.0f, 4.0f, 36);
-        name = "Cylinder";
+        name = "Cylinder ";
     } else if (_chosenEntity == 3) {
         entity = new Frustum(2.0f, 0.0f, 4.0f, 36);
-        name = "Cone";
+        name = "Cone ";
     }
     _entites.push_back(entity);
     _entityNames.push_back(name);
@@ -253,11 +260,6 @@ void MainWindow::addEntity() {
 void MainWindow::setCursorPosition(double xPos, double yPos) {
     _xPos = static_cast<float>(xPos);
     _yPos = static_cast<float>(yPos);
-}
-
-void MainWindow::setBeingPosition(double xPos, double yPos) {
-    _xBegin = static_cast<float>(xPos);
-    _yBegin = static_cast<float>(yPos);
 }
 
 void MainWindow::setCameraResize(int width, int height) {
@@ -296,14 +298,38 @@ void MainWindow::setEntityMouse(double xPos, double yPos) {
         return;
     Entity* entity = _entites[_selectedEntity];
     if (entityMove == entityTranslate) {
-        entity->position += -deltaX * _camera->getRight() * TRANSLATE_SPEED;
-        entity->position += -deltaY * _camera->getUp() * TRANSLATE_SPEED;
+        if (focusAxis == 0) {
+            entity->position += -deltaX * _camera->getRight() * TRANSLATE_SPEED;
+            entity->position += -deltaY * _camera->getUp() * TRANSLATE_SPEED;
+        }
+        if (focusAxis & focusX)
+            entity->position.x += -deltaY * TRANSLATE_SPEED;
+        if (focusAxis & focusY)
+            entity->position.y += -deltaY * TRANSLATE_SPEED;
+        if (focusAxis & focusZ)
+            entity->position.z += -deltaY * TRANSLATE_SPEED;
     }
     else if (entityMove == entityRotate) {
-        auto rotate =
-                glm::angleAxis(glm::radians(deltaY * 0.1f), _camera->getRight());
-        rotate *= glm::angleAxis(glm::radians(-deltaX * 0.1f), glm::vec3(0.0f, 0.0f, 1.0f));
-        entity->rotation = rotate * entity->rotation;
+        if (focusAxis == 0) {
+            auto rotate =
+                    glm::angleAxis(glm::radians(deltaY * 0.1f), _camera->getFront());
+            entity->rotation = rotate * entity->rotation;
+        }
+        if (focusAxis & focusX) {
+            auto rotate =
+                    glm::angleAxis(glm::radians(deltaY * 0.1f), glm::vec3(1.f, .0f, .0f));
+            entity->rotation = rotate * entity->rotation;
+        }
+        if (focusAxis & focusY) {
+            auto rotate =
+                    glm::angleAxis(glm::radians(deltaY * 0.1f), glm::vec3(.0f, 1.f, .0f));
+            entity->rotation = rotate * entity->rotation;
+        }
+        if (focusAxis & focusZ) {
+            auto rotate =
+                    glm::angleAxis(glm::radians(deltaY * 0.1f), glm::vec3(.0f, .0f, 1.f));
+            entity->rotation = rotate * entity->rotation;
+        }
     }
     else if (entityMove == entityScale) {
         entity->scale += glm::vec3(-deltaY * 0.01f);
