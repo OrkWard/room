@@ -240,3 +240,57 @@ Frustum::~Frustum() {
     glDeleteBuffers(1, &_vbo);
     glDeleteBuffers(1, &_ebo);
 }
+
+Axis::Axis() {
+    std::vector<float> vertices;
+    vertices.push_back(-10000.0f);
+    vertices.push_back(0.0f);
+    vertices.push_back(10000.0f);
+    vertices.push_back(0.0f);
+    vertices.push_back(0.0f);
+    vertices.push_back(-10000.0f);
+    vertices.push_back(0.0f);
+    vertices.push_back(10000.0f);
+    std::vector<int> axis;
+    axis.push_back(0);
+    axis.push_back(0);
+    axis.push_back(1);
+    axis.push_back(1);
+
+    std::vector<unsigned int> indices;
+    indices.push_back(0);
+    indices.push_back(1);
+    indices.push_back(2);
+    indices.push_back(3);
+
+
+    glGenBuffers(2, _vbo);
+    glGenBuffers(1, &_ebo);
+    glGenVertexArrays(1, &_vao);
+
+    glBindVertexArray(_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo[0]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(int) * axis.size(), axis.data(), GL_STATIC_DRAW);
+    glVertexAttribIPointer(1, 1, GL_INT, sizeof(int), nullptr);
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_DRAW);
+    glBindVertexArray(0);
+}
+
+void Axis::draw() const {
+    glBindVertexArray(_vao);
+    glDrawElements(GL_LINES, 4, GL_UNSIGNED_INT, nullptr);
+}
+
+Axis::~Axis() {
+    glDeleteVertexArrays(1, &_vao);
+    glDeleteBuffers(2, _vbo);
+    glDeleteBuffers(1, &_ebo);
+}

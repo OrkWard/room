@@ -63,12 +63,19 @@ MainWindow::MainWindow(int width, int height):
     ImFont* font = ImGui::GetIO().Fonts->AddFontFromFileTTF("../media/font/segoeui.ttf", 20.0f);
     IM_ASSERT(font != nullptr);
 
+    // init axis
+    _axis = std::make_unique<Axis>();
+
     // init shader
     _primitiveShader = std::make_unique<GLSLProgram>();
     _primitiveShader->attachVertexShaderFromFile("../glsl/primitive.vert");
     _primitiveShader->attachGeometryShaderFromFile("../glsl/primitive.geom");
     _primitiveShader->attachFragmentShaderFromFile("../glsl/primitive.frag");
     _primitiveShader->link();
+    _axisShader = std::make_unique<GLSLProgram>();
+    _axisShader->attachVertexShaderFromFile("../glsl/axis.vert");
+    _axisShader->attachFragmentShaderFromFile("../glsl/axis.frag");
+    _axisShader->link();
     initNormalShader();
 
     // init light
@@ -91,17 +98,22 @@ void MainWindow::framebuffer_size_callback(GLFWwindow *window, int width, int he
 
 void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int) {
     auto* mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
+    double xPos, yPos;
+    glfwGetCursorPos(window, &xPos, &yPos);
     if (key == GLFW_KEY_A && action == GLFW_PRESS) {
         mainWindow->switchEntity();
     }
     else if (key == GLFW_KEY_G && action == GLFW_PRESS) {
         mainWindow->entityMove = entityTranslate;
+        mainWindow->setBeingPosition(xPos, yPos);
     }
     else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
         mainWindow->entityMove = entityRotate;
+        mainWindow->setBeingPosition(xPos, yPos);
     }
     else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
         mainWindow->entityMove = entityScale;
+        mainWindow->setBeingPosition(xPos, yPos);
     }
     else if (action == GLFW_RELEASE)
         mainWindow->entityMove = entityStay;
@@ -124,7 +136,7 @@ void MainWindow::cursor_position_callback(GLFWwindow *window, double xpos, doubl
     mainWindow->setCursorPosition(xpos, ypos);
 }
 
-void MainWindow::scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+void MainWindow::scroll_callback(GLFWwindow *window, double , double yoffset) {
     auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
     mainWindow->setCameraScroll(yoffset);
 }
@@ -141,6 +153,7 @@ void MainWindow::render() {
     glClearColor(0.0f, .0f, .0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    /* imgui render */
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -149,7 +162,7 @@ void MainWindow::render() {
 
     bool listOpen = true;
     {
-        ImGui::SetNextWindowSize(ImVec2(200.0f, 300.0f));
+        ImGui::SetNextWindowSize(ImVec2(300.0f, 300.0f));
         ImGui::Begin("Edit", &listOpen);
 
         if (ImGui::BeginListBox("Entity List")) {
@@ -169,6 +182,13 @@ void MainWindow::render() {
         ImGui::End();
     }
 
+    /* entity render */
+    glEnable(GL_DEPTH_TEST);
+    _axisShader->use();
+    _axisShader->setUniformMat4("view", _camera->getViewMatrix());
+    _axisShader->setUniformMat4("project", _camera->getProjectionMatrix());
+    _axis->draw();
+
     for (const auto& entity : _entites) {
         _primitiveShader->use();
         _primitiveShader->setUniformMat4("model", entity->getModelMat());
@@ -184,10 +204,7 @@ void MainWindow::render() {
         _primitiveShader->setUniformVec3("material.ks", entity->ks);
         _primitiveShader->setUniformFloat("material.ns", entity->ns);
         _primitiveShader->setUniformVec3("viewPos", _camera->position);
-        glEnable(GL_DEPTH_TEST);
         entity->draw();
-        opengl_debug("after draw");
-        glDisable(GL_DEPTH_TEST);
     }
 
     ImGui::Render();
@@ -234,8 +251,13 @@ void MainWindow::addEntity() {
 }
 
 void MainWindow::setCursorPosition(double xPos, double yPos) {
-    _xPos = xPos;
-    _yPos = yPos;
+    _xPos = static_cast<float>(xPos);
+    _yPos = static_cast<float>(yPos);
+}
+
+void MainWindow::setBeingPosition(double xPos, double yPos) {
+    _xBegin = static_cast<float>(xPos);
+    _yBegin = static_cast<float>(yPos);
 }
 
 void MainWindow::setCameraResize(int width, int height) {
@@ -244,19 +266,19 @@ void MainWindow::setCameraResize(int width, int height) {
 }
 
 void MainWindow::setCameraMouse(double xPos, double yPos) {
-    double deltaX = xPos - _xPos;
-    double deltaY = yPos - _yPos;
+    float deltaX = xPos - _xPos;
+    float deltaY = yPos - _yPos;
     if (cameraMove == cameraTranslate) {
-        _camera->position += static_cast<float>(deltaX) * _camera->getRight() * TRANSLATE_SPEED;
-        _camera->position += static_cast<float>(deltaY) * _camera->getUp() * TRANSLATE_SPEED;
-        _camera->center += static_cast<float>(deltaX) * _camera->getRight() * TRANSLATE_SPEED;
-        _camera->center += static_cast<float>(deltaY) * _camera->getUp() * TRANSLATE_SPEED;
+        _camera->position += deltaX * _camera->getRight() * TRANSLATE_SPEED;
+        _camera->position += deltaY * _camera->getUp() * TRANSLATE_SPEED;
+        _camera->center += deltaX * _camera->getRight() * TRANSLATE_SPEED;
+        _camera->center += deltaY * _camera->getUp() * TRANSLATE_SPEED;
     }
     else if (cameraMove == cameraRotate) {
         glm::mat4 rotate(1.0f);
         rotate = glm::translate(rotate, _camera->center);
-        rotate = glm::rotate(rotate, static_cast<float>(glm::radians(deltaY)), _camera->getRight());
-        rotate = glm::rotate(rotate, static_cast<float>(glm::radians(-deltaX)), _camera->getUp());
+        rotate = glm::rotate(rotate, glm::radians(deltaY), _camera->getRight());
+        rotate = glm::rotate(rotate, glm::radians(-deltaX), _camera->getUp());
         rotate = glm::translate(rotate, -_camera->center);
         _camera->position = glm::vec3(rotate * glm::vec4(_camera->position, 1.0f));
     }
@@ -264,26 +286,27 @@ void MainWindow::setCameraMouse(double xPos, double yPos) {
 
 void MainWindow::setCameraScroll(double offset) {
     _camera->position += static_cast<float>(offset) * _camera->getFront() * SCROLL_SPEED;
+    _camera->center += static_cast<float>(offset) * _camera->getFront() * SCROLL_SPEED;
 }
 
 void MainWindow::setEntityMouse(double xPos, double yPos) {
-    double deltaX = xPos - _xPos;
-    double deltaY = yPos - _yPos;
+    float deltaX = xPos - _xPos;
+    float deltaY = yPos - _yPos;
     if (_selectedEntity == -1)
         return;
     Entity* entity = _entites[_selectedEntity];
     if (entityMove == entityTranslate) {
-        entity->position += static_cast<float>(-deltaX) * _camera->getRight() * TRANSLATE_SPEED;
-        entity->position += static_cast<float>(-deltaY) * _camera->getUp() * TRANSLATE_SPEED;
+        entity->position += -deltaX * _camera->getRight() * TRANSLATE_SPEED;
+        entity->position += -deltaY * _camera->getUp() * TRANSLATE_SPEED;
     }
     else if (entityMove == entityRotate) {
         auto rotate =
-                glm::angleAxis(static_cast<float>(glm::radians(deltaY)), _camera->getRight());
-        rotate *= glm::angleAxis(static_cast<float>(glm::radians(-deltaX)), _camera->getUp());
-        entity->rotation *= rotate;
+                glm::angleAxis(glm::radians(deltaY * 0.1f), _camera->getRight());
+        rotate *= glm::angleAxis(glm::radians(-deltaX * 0.1f), glm::vec3(0.0f, 0.0f, 1.0f));
+        entity->rotation = rotate * entity->rotation;
     }
     else if (entityMove == entityScale) {
-        entity->scale += glm::vec3(static_cast<float>(-deltaY) * 0.01f);
+        entity->scale += glm::vec3(-deltaY * 0.01f);
     }
 }
 

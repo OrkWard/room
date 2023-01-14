@@ -62,3 +62,14 @@ public:
     ~Quad();
     void draw() const;
 };
+
+class Axis {
+private:
+    unsigned int _vbo[2] = {0};
+    unsigned int _vao = 0;
+    unsigned int _ebo = 0;
+public:
+    Axis();
+    ~Axis();
+    void draw() const;
+};

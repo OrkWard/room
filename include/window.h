@@ -44,6 +44,9 @@ protected:
     GLFWwindow *_window;
     double _deltaTime = 0;
     double _lastFrame = 0;
+
+    float _xPos, _yPos;
+
     std::unique_ptr<GLSLProgram> _normalShader;
 public:
     Window(int width, int height, char const *title);
@@ -67,6 +70,7 @@ public:
     void addEntity();
     void render() override;
     void setCursorPosition(double xPos, double yPos);
+    void setBeingPosition(double xPos, double yPos);
 
     // mouse viewport change event
     void setCameraResize(int width, int height);
@@ -77,15 +81,24 @@ public:
     void setEntityMouse(double xPos, double yPos);
 private:
     std::unique_ptr<EntityWindow> _entityWindow;
+
+    float _xBegin, _yBegin;
+
+    std::unique_ptr<GLSLProgram> _primitiveShader;
     std::vector<Entity*> _entites;
     std::vector<std::string> _entityNames;
     int _selectedEntity;
-    std::unique_ptr<GLSLProgram> _primitiveShader;
+
     std::unique_ptr<PerspectiveCamera> _camera;
+
+    // environment
+    std::unique_ptr<Axis> _axis;
+    std::unique_ptr<GLSLProgram> _axisShader;
     AmbientLight _ambient;
     PointLight _light;
+
+    // entity to construct
     int _chosenEntity;
-    double _xPos, _yPos;
 private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     static void mouse_button_callback(GLFWwindow *window, int buttom, int action, int mods);
