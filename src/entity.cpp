@@ -122,6 +122,10 @@ Sphere::Sphere(float radius, int sectors, int stacks) {
 }
 
 void Sphere::draw() const {
+    if (texture > 0) {
+        glActiveTexture(0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+    }
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, nullptr);
 }

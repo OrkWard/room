@@ -19,6 +19,7 @@ public:
     glm::vec3 kd = glm::vec3(1.0f);
     glm::vec3 ks = glm::vec3(1.0f);
     float ns = 32.0f;
+    int texture = -1;
 public:
     virtual ~Entity() = default;
     glm::mat4 getModelMat() const;

@@ -97,6 +97,7 @@ private:
     std::vector<Entity*> _entites;
     std::vector<std::string> _entityNames;
     int _selectedEntity;
+    std::vector<std::unique_ptr<ImageTexture2D>> _textures;
 
     std::unique_ptr<PerspectiveCamera> _camera;
 

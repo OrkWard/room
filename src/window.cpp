@@ -62,6 +62,12 @@ MainWindow::MainWindow(int width, int height):
     ImFont* font = ImGui::GetIO().Fonts->AddFontFromFileTTF("../media/font/segoeui.ttf", 20.0f);
     IM_ASSERT(font != nullptr);
 
+    // std: initialize all textures
+    for (int i = 0; i < 5; ++i) {
+        std::string imgName = "../media/texture/" + std::to_string(i + 1) + ".jpg";
+        _textures.push_back(std::make_unique<ImageTexture2D>(imgName));
+    }
+
     // init axis
     _axis = std::make_unique<Axis>();
 
@@ -187,6 +193,18 @@ void MainWindow::render() {
                         ImGui::ColorEdit3("Diffusion", reinterpret_cast<float*>(&_entites[i]->kd));
                         ImGui::ColorEdit3("Specular", reinterpret_cast<float*>(&_entites[i]->ks));
                         ImGui::SliderFloat("Shininess", &_entites[i]->ns, 4.0f, 256.0f);
+                        ImGui::EndMenu();
+                    }
+
+                    if (ImGui::BeginMenu("Texture")) {
+                        if (ImGui::MenuItem("(Not selected)"))
+                            _entites[i]->texture = -1;
+                        for (int j = 0; j < _textures.size(); ++j) {
+                            if (ImGui::MenuItem(std::to_string(j + 1).c_str())) {
+                                _entites[i]->texture = j;
+                                cout << j << endl;
+                            }
+                        }
                         ImGui::EndMenu();
                     }
                     ImGui::EndPopup();
@@ -364,6 +382,7 @@ MainWindow::~MainWindow() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
     glfwDestroyWindow(_window);
+    for (auto & _entite : _entites) delete _entite;
 }
 
 // EntityWindow
