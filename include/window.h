@@ -79,6 +79,7 @@ public:
     void addEntity();
     void render() override;
     void setCursorPosition(double xPos, double yPos);
+    void orbit();
 
     // mouse viewport change event
     void setCameraResize(int width, int height);

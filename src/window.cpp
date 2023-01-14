@@ -121,6 +121,9 @@ void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int)
         mainWindow->focusAxis ^= focusY;
     if (key == GLFW_KEY_Z && action == GLFW_PRESS)
         mainWindow->focusAxis ^= focusZ;
+
+    if (key == GLFW_KEY_F && action == GLFW_PRESS)
+        mainWindow->orbit();
 }
 
 void MainWindow::mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
@@ -172,7 +175,7 @@ void MainWindow::render() {
         if (ImGui::BeginListBox("Entity List")) {
             for (int i = 0; i < _entityNames.size(); ++i) {
                 const bool is_selected = (_selectedEntity == i);
-                if (ImGui::Selectable((_entityNames[i] + std::to_string(i)).c_str(), is_selected)) {
+                if (ImGui::Selectable(_entityNames[i].c_str(), is_selected)) {
                     _selectedEntity = i;
                 }
 
@@ -236,6 +239,12 @@ void MainWindow::chooseEntity(double xPos, double yPos) {
     _chosenEntity = _entityWindow->chooseEntity(xPos, yPos);
 }
 
+void MainWindow::orbit() {
+    if (_selectedEntity < 0)
+        return;
+    _camera->center = _entites[_selectedEntity]->position;
+}
+
 void MainWindow::addEntity() {
     glfwMakeContextCurrent(_window);
     Entity *entity;
@@ -254,7 +263,7 @@ void MainWindow::addEntity() {
         name = "Cone ";
     }
     _entites.push_back(entity);
-    _entityNames.push_back(name);
+    _entityNames.push_back(name + std::to_string(_entites.size()));
 }
 
 void MainWindow::setCursorPosition(double xPos, double yPos) {
@@ -303,11 +312,11 @@ void MainWindow::setEntityMouse(double xPos, double yPos) {
             entity->position += -deltaY * _camera->getUp() * TRANSLATE_SPEED;
         }
         if (focusAxis & focusX)
-            entity->position.x += -deltaY * TRANSLATE_SPEED;
+            entity->position.x += deltaY * TRANSLATE_SPEED;
         if (focusAxis & focusY)
-            entity->position.y += -deltaY * TRANSLATE_SPEED;
+            entity->position.y += deltaY * TRANSLATE_SPEED;
         if (focusAxis & focusZ)
-            entity->position.z += -deltaY * TRANSLATE_SPEED;
+            entity->position.z += deltaY * TRANSLATE_SPEED;
     }
     else if (entityMove == entityRotate) {
         if (focusAxis == 0) {
