@@ -32,6 +32,13 @@ enum CameraMove {
     cameraTranslate = 3
 };
 
+enum EntityMove {
+    entityStay = 0,
+    entityScale = 1,
+    entityRotate = 2,
+    entityTranslate = 3
+};
+
 class Window {
 protected:
     GLFWwindow *_window;
@@ -50,16 +57,24 @@ protected:
 class MainWindow: public Window {
 public:
     CameraMove cameraMove;
+    EntityMove entityMove;
 public:
     MainWindow(int width, int height);
     ~MainWindow();
+    // swtich entity window
     void switchEntity();
     void chooseEntity(double xPos, double yPos);
     void addEntity();
     void render() override;
+    void setCursorPosition(double xPos, double yPos);
+
+    // mouse viewport change event
     void setCameraResize(int width, int height);
     void setCameraMouse(double xPos, double yPos);
     void setCameraScroll(double offset);
+
+    // mouse entity edit event
+    void setEntityMouse(double xPos, double yPos);
 private:
     std::unique_ptr<EntityWindow> _entityWindow;
     std::vector<Entity*> _entites;

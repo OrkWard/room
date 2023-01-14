@@ -34,7 +34,7 @@ int Window::shouldClose() {
 
 MainWindow::MainWindow(int width, int height):
     Window(width, height, "Room"), _chosenEntity(-1), cameraMove(cameraStay), _selectedEntity(-1),
-    _xPos(static_cast<double>(SCR_WIDTH) / 2), _yPos(static_cast<double>(SCR_HEIGHT) / 2) {
+    entityMove(entityStay) {
     // init window
     glfwSetWindowUserPointer(_window, this);
     glfwSetKeyCallback(_window, key_callback);
@@ -90,10 +90,21 @@ void MainWindow::framebuffer_size_callback(GLFWwindow *window, int width, int he
 }
 
 void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int) {
+    auto* mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
     if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-        auto* mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
         mainWindow->switchEntity();
     }
+    else if (key == GLFW_KEY_G && action == GLFW_PRESS) {
+        mainWindow->entityMove = entityTranslate;
+    }
+    else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        mainWindow->entityMove = entityRotate;
+    }
+    else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+        mainWindow->entityMove = entityScale;
+    }
+    else if (action == GLFW_RELEASE)
+        mainWindow->entityMove = entityStay;
 }
 
 void MainWindow::mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
@@ -109,6 +120,8 @@ void MainWindow::mouse_button_callback(GLFWwindow *window, int button, int actio
 void MainWindow::cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
     auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
     mainWindow->setCameraMouse(xpos, ypos);
+    mainWindow->setEntityMouse(xpos, ypos);
+    mainWindow->setCursorPosition(xpos, ypos);
 }
 
 void MainWindow::scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
@@ -220,6 +233,11 @@ void MainWindow::addEntity() {
     _entityNames.push_back(name);
 }
 
+void MainWindow::setCursorPosition(double xPos, double yPos) {
+    _xPos = xPos;
+    _yPos = yPos;
+}
+
 void MainWindow::setCameraResize(int width, int height) {
     _camera->project = glm::perspective(glm::radians(50.0f),
                                         static_cast<float>(width) / height, .1f, 10000.f);
@@ -242,12 +260,31 @@ void MainWindow::setCameraMouse(double xPos, double yPos) {
         rotate = glm::translate(rotate, -_camera->center);
         _camera->position = glm::vec3(rotate * glm::vec4(_camera->position, 1.0f));
     }
-    _xPos = xPos;
-    _yPos = yPos;
 }
 
 void MainWindow::setCameraScroll(double offset) {
     _camera->position += static_cast<float>(offset) * _camera->getFront() * SCROLL_SPEED;
+}
+
+void MainWindow::setEntityMouse(double xPos, double yPos) {
+    double deltaX = xPos - _xPos;
+    double deltaY = yPos - _yPos;
+    if (_selectedEntity == -1)
+        return;
+    Entity* entity = _entites[_selectedEntity];
+    if (entityMove == entityTranslate) {
+        entity->position += static_cast<float>(-deltaX) * _camera->getRight() * TRANSLATE_SPEED;
+        entity->position += static_cast<float>(-deltaY) * _camera->getUp() * TRANSLATE_SPEED;
+    }
+    else if (entityMove == entityRotate) {
+        auto rotate =
+                glm::angleAxis(static_cast<float>(glm::radians(deltaY)), _camera->getRight());
+        rotate *= glm::angleAxis(static_cast<float>(glm::radians(-deltaX)), _camera->getUp());
+        entity->rotation *= rotate;
+    }
+    else if (entityMove == entityScale) {
+        entity->scale += glm::vec3(static_cast<float>(-deltaY) * 0.01f);
+    }
 }
 
 MainWindow::~MainWindow() {
