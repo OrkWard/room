@@ -63,6 +63,8 @@ public:
 private:
     std::unique_ptr<EntityWindow> _entityWindow;
     std::vector<Entity*> _entites;
+    std::vector<std::string> _entityNames;
+    int _selectedEntity;
     std::unique_ptr<GLSLProgram> _primitiveShader;
     std::unique_ptr<PerspectiveCamera> _camera;
     AmbientLight _ambient;

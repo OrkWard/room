@@ -33,7 +33,8 @@ int Window::shouldClose() {
 // ----------
 
 MainWindow::MainWindow(int width, int height):
-    Window(width, height, "Room"), _chosenEntity(-1), cameraMove(cameraStay) {
+    Window(width, height, "Room"), _chosenEntity(-1), cameraMove(cameraStay), _selectedEntity(-1),
+    _xPos(static_cast<double>(SCR_WIDTH) / 2), _yPos(static_cast<double>(SCR_HEIGHT) / 2) {
     // init window
     glfwSetWindowUserPointer(_window, this);
     glfwSetKeyCallback(_window, key_callback);
@@ -133,6 +134,28 @@ void MainWindow::render() {
 
     ImGui::ShowDemoWindow();
 
+    bool listOpen = true;
+    {
+        ImGui::SetNextWindowSize(ImVec2(200.0f, 300.0f));
+        ImGui::Begin("Edit", &listOpen);
+
+        if (ImGui::BeginListBox("Entity List")) {
+            for (int i = 0; i < _entityNames.size(); ++i) {
+                const bool is_selected = (_selectedEntity == i);
+                if (ImGui::Selectable(_entityNames[i].c_str(), is_selected)) {
+                    _selectedEntity = i;
+                }
+            }
+            ImGui::EndListBox();
+        }
+
+//        if (ImGui::BeginListBox("Light List")) {
+//            ImGui::EndListBox();
+//        }
+
+        ImGui::End();
+    }
+
     for (const auto& entity : _entites) {
         _primitiveShader->use();
         _primitiveShader->setUniformMat4("model", entity->getModelMat());
@@ -179,15 +202,22 @@ void MainWindow::chooseEntity(double xPos, double yPos) {
 void MainWindow::addEntity() {
     glfwMakeContextCurrent(_window);
     Entity *entity;
-    if (_chosenEntity == 0)
+    std::string name;
+    if (_chosenEntity == 0) {
         entity = new Cube(2.0f);
-    else if (_chosenEntity == 1)
+        name = "Cube";
+    } else if (_chosenEntity == 1) {
         entity = new Sphere(2.0f, 36, 36);
-    else if (_chosenEntity == 2)
+        name = "Sphere";
+    } else if (_chosenEntity == 2) {
         entity = new Frustum(2.0f, 2.0f, 4.0f, 36);
-    else if (_chosenEntity == 3)
+        name = "Cylinder";
+    } else if (_chosenEntity == 3) {
         entity = new Frustum(2.0f, 0.0f, 4.0f, 36);
+        name = "Cone";
+    }
     _entites.push_back(entity);
+    _entityNames.push_back(name);
 }
 
 void MainWindow::setCameraResize(int width, int height) {
@@ -217,7 +247,6 @@ void MainWindow::setCameraMouse(double xPos, double yPos) {
 }
 
 void MainWindow::setCameraScroll(double offset) {
-    std::cout << offset << std::endl;
     _camera->position += static_cast<float>(offset) * _camera->getFront() * SCROLL_SPEED;
 }
 
@@ -327,7 +356,6 @@ void EntityWindow::render() {
     drawEntity(*_prism, 2);
     drawEntity(*_pyramid, 3);
 
-//    std::cout << glGetError() << std::endl;
     /* end render */
     glfwSwapBuffers(_window);
 }
