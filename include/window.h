@@ -46,6 +46,8 @@ enum FocusAxis_ {
 };
 
 using FocusAxis = int;
+using std::cout;
+using std::endl;
 
 class Window {
 protected:

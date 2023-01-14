@@ -85,14 +85,16 @@ MainWindow::MainWindow(int width, int height):
     // init camera
     _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
                                                   (float)SCR_WIDTH / SCR_HEIGHT, .1f, 10000.0f);
-    _camera->position = glm::vec3(15.0f, 18.0f, 20.0f);
+    _camera->position = glm::vec3(15.0f, 18.0f, 10.0f);
 }
 
 void MainWindow::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glfwMakeContextCurrent(window);
     glViewport(0, 0, width, height);
-    auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
-    mainWindow->setCameraResize(width, height);
+    if (width > 0 && height > 0) {
+        auto mainWindow = static_cast<MainWindow *>(glfwGetWindowUserPointer(window));
+        mainWindow->setCameraResize(width, height);
+    }
 }
 
 void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int) {
@@ -177,6 +179,17 @@ void MainWindow::render() {
                 const bool is_selected = (_selectedEntity == i);
                 if (ImGui::Selectable(_entityNames[i].c_str(), is_selected)) {
                     _selectedEntity = i;
+                }
+                if (ImGui::BeginPopupContextItem()) {
+                    _selectedEntity = i;
+                    if (ImGui::BeginMenu("Material")) {
+                        ImGui::ColorEdit3("Ambient", reinterpret_cast<float*>(&_entites[i]->ka));
+                        ImGui::ColorEdit3("Diffusion", reinterpret_cast<float*>(&_entites[i]->kd));
+                        ImGui::ColorEdit3("Specular", reinterpret_cast<float*>(&_entites[i]->ks));
+                        ImGui::SliderFloat("Shininess", &_entites[i]->ns, 4.0f, 256.0f);
+                        ImGui::EndMenu();
+                    }
+                    ImGui::EndPopup();
                 }
 
                 if (is_selected)
