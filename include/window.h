@@ -14,7 +14,7 @@
 #include <iostream>
 #include <memory>
 
-#include "entity.h"
+#include "model.h"
 #include "glsl_program.h"
 #include "camera.h"
 #include "light.h"
@@ -79,7 +79,7 @@ public:
     // swtich entity window
     void switchEntity();
     void chooseEntity(double xPos, double yPos);
-    void addEntity();
+    void addEntity(const char *path);
     void render() override;
     void setCursorPosition(double xPos, double yPos);
     void orbit();

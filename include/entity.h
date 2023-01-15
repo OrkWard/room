@@ -8,9 +8,9 @@
 
 class Entity {
 protected:
-    unsigned int _vbo = 0;
-    unsigned int _vao = 0;
-    unsigned int _ebo = 0;
+    GLuint _vbo = 0;
+    GLuint _vao = 0;
+    GLuint _ebo = 0;
 public:
     glm::vec3 position = glm::vec3(.0f);
     glm::quat rotation = glm::angleAxis(0.0f, glm::vec3(.0f, .0f, 1.0f));

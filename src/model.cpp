@@ -62,11 +62,7 @@ Model::Model(const std::string& filepath) {
     _vertices = vertices;
     _indices = indices;
     
-    computeBoundingBox();
-
     initGLResources();
-
-    initBoxGLResources();
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
@@ -78,11 +74,7 @@ Model::Model(const std::string& filepath) {
 Model::Model(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
     : _vertices(vertices), _indices(indices) {
 
-    computeBoundingBox();
-
     initGLResources();
-
-    initBoxGLResources();
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
@@ -93,10 +85,7 @@ Model::Model(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& i
 
 Model::Model(Model&& rhs) noexcept
     : _vertices(std::move(rhs._vertices)),
-      _indices(std::move(rhs._indices)),
-      _boundingBox(std::move(rhs._boundingBox)),
-      _vao(rhs._vao), _vbo(rhs._vbo), _ebo(rhs._ebo), 
-      _boxVao(rhs._boxVao), _boxVbo(rhs._boxVbo), _boxEbo(rhs._boxEbo) {
+      _indices(std::move(rhs._indices)) {
     _vao = 0;
     _vbo = 0;
     _ebo = 0;
@@ -109,30 +98,10 @@ Model::~Model() {
     cleanup();
 }
 
-BoundingBox Model::getBoundingBox() const {
-    return _boundingBox;
-}
-
 void Model::draw() const {
     glBindVertexArray(_vao);
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(_indices.size()), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(_indices.size()), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
-}
-
-void Model::drawBoundingBox() const {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glBindVertexArray(_boxVao);
-    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
-GLuint Model::getVao() const {
-    return _vao;
-}
-
-GLuint Model::getBoundingBoxVao() const {
-    return _boxVao;
 }
 
 size_t Model::getVertexCount() const {
@@ -163,75 +132,10 @@ void Model::initGLResources() {
     // specify layout, size of a vertex, data type, normalize, sizeof vertex array, offset of the attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
     glEnableVertexAttribArray(2);
-
-    glBindVertexArray(0);
-}
-
-void Model::computeBoundingBox() {
-    float minX = std::numeric_limits<float>::max();
-    float minY = std::numeric_limits<float>::max();
-    float minZ = std::numeric_limits<float>::max();
-    float maxX = -std::numeric_limits<float>::max();
-    float maxY = -std::numeric_limits<float>::max();
-    float maxZ = -std::numeric_limits<float>::max();
-
-    for (const auto& v : _vertices) {
-        minX = std::min(v.position.x, minX);
-        minY = std::min(v.position.y, minY);
-        minZ = std::min(v.position.z, minZ);
-        maxX = std::max(v.position.x, maxX);
-        maxY = std::max(v.position.y, maxY);
-        maxZ = std::max(v.position.z, maxZ);
-    }
-
-    _boundingBox.min = glm::vec3(minX, minY, minZ);
-    _boundingBox.max = glm::vec3(maxX, maxY, maxZ);
-}
-
-void Model::initBoxGLResources() {
-    std::vector<glm::vec3> boxVertices = {
-        glm::vec3(_boundingBox.min.x, _boundingBox.min.y, _boundingBox.min.z),
-        glm::vec3(_boundingBox.max.x, _boundingBox.min.y, _boundingBox.min.z),
-        glm::vec3(_boundingBox.min.x, _boundingBox.max.y, _boundingBox.min.z),
-        glm::vec3(_boundingBox.max.x, _boundingBox.max.y, _boundingBox.min.z),
-        glm::vec3(_boundingBox.min.x, _boundingBox.min.y, _boundingBox.max.z),
-        glm::vec3(_boundingBox.max.x, _boundingBox.min.y, _boundingBox.max.z),
-        glm::vec3(_boundingBox.min.x, _boundingBox.max.y, _boundingBox.max.z),
-        glm::vec3(_boundingBox.max.x, _boundingBox.max.y, _boundingBox.max.z),
-    };
-
-    std::vector<uint32_t> boxIndices = {
-        0, 1,
-        0, 2,
-        0, 4,
-        3, 1,
-        3, 2,
-        3, 7,
-        5, 4,
-        5, 1,
-        5, 7,
-        6, 4,
-        6, 7,
-        6, 2
-    };
-
-    glGenVertexArrays(1, &_boxVao);
-    glGenBuffers(1, &_boxVbo);
-    glGenBuffers(1, &_boxEbo);
-
-    glBindVertexArray(_boxVao);
-    glBindBuffer(GL_ARRAY_BUFFER, _boxVbo);
-    glBufferData(GL_ARRAY_BUFFER, boxVertices.size() * sizeof(glm::vec3), boxVertices.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _boxEbo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, boxIndices.size() * sizeof(uint32_t), boxIndices.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr);
-    glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
 }

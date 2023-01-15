@@ -227,7 +227,7 @@ void MainWindow::showImGuiWindow() {
     ImGui::SetNextWindowSize(ImVec2(300.0f, 300.0f));
     ImGui::Begin("Edit");
     if (ImGui::Button("Import obj"))
-        ImGuiFileDialog::Instance()->OpenDialog("Obj", "Choose obj to import", ".obj", "../media/");
+        ImGuiFileDialog::Instance()->OpenDialog("Obj", "Choose obj to import", ".obj", "../media/.");
 
     if (ImGuiFileDialog::Instance()->Display("Obj"))
     {
@@ -235,7 +235,7 @@ void MainWindow::showImGuiWindow() {
         {
             std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-            cout << filePath << endl << filePathName << endl;
+            addEntity(filePathName.c_str());
         }
 
         ImGuiFileDialog::Instance()->Close();
@@ -263,7 +263,6 @@ void MainWindow::showImGuiWindow() {
                     for (int j = 0; j < _textures.size(); ++j) {
                         if (ImGui::MenuItem(std::to_string(j + 1).c_str())) {
                             _entites[i]->texture = j;
-                            cout << j << endl;
                         }
                     }
                     ImGui::EndMenu();
@@ -294,11 +293,15 @@ void MainWindow::orbit() {
     _camera->center = _entites[_selectedEntity]->position;
 }
 
-void MainWindow::addEntity() {
+void MainWindow::addEntity(const char *path) {
     glfwMakeContextCurrent(_window);
     Entity *entity;
     std::string name;
-    if (_chosenEntity == 0) {
+    if (path != nullptr) {
+        entity = new Model(path);
+        name = "Model ";
+    }
+    else if (_chosenEntity == 0) {
         entity = new Cube(2.0f);
         name = "Cube ";
     } else if (_chosenEntity == 1) {
@@ -585,5 +588,5 @@ int EntityWindow::chooseEntity(double xPos, double yPos) {
 void EntityWindow::mouse_button_callback(GLFWwindow *window, int button, int action, int) {
     auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-        mainWindow->addEntity();
+        mainWindow->addEntity(nullptr);
 }
