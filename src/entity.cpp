@@ -3,14 +3,47 @@
 Cube::Cube(float side) {
     float hfSide = side / 2;
     float vertices[] = {
-            -hfSide, hfSide, hfSide,
-            -hfSide, -hfSide, hfSide,
-            hfSide, hfSide, hfSide,
-            hfSide, -hfSide, hfSide,
-            -hfSide, hfSide, -hfSide,
-            -hfSide, -hfSide, -hfSide,
-            hfSide, hfSide, -hfSide,
-            hfSide, -hfSide, -hfSide,
+            -hfSide, -hfSide, -hfSide,  0.0f, 0.0f,
+            hfSide, -hfSide, -hfSide,  1.0f, 0.0f,
+            hfSide,  hfSide, -hfSide,  1.0f, 1.0f,
+            hfSide,  hfSide, -hfSide,  1.0f, 1.0f,
+            -hfSide,  hfSide, -hfSide,  0.0f, 1.0f,
+            -hfSide, -hfSide, -hfSide,  0.0f, 0.0f,
+
+            -hfSide, -hfSide,  hfSide,  0.0f, 0.0f,
+            hfSide,  hfSide,  hfSide,  1.0f, 1.0f,
+            hfSide, -hfSide,  hfSide,  1.0f, 0.0f,
+            hfSide,  hfSide,  hfSide,  1.0f, 1.0f,
+            -hfSide, -hfSide,  hfSide,  0.0f, 0.0f,
+            -hfSide,  hfSide,  hfSide,  0.0f, 1.0f,
+
+            -hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
+            -hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
+            -hfSide,  hfSide, -hfSide,  1.0f, 1.0f,
+            -hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
+            -hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
+            -hfSide, -hfSide,  hfSide,  0.0f, 0.0f,
+
+            hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
+            hfSide,  hfSide, -hfSide,  1.0f, 1.0f,
+            hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
+            hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
+            hfSide, -hfSide,  hfSide,  0.0f, 0.0f,
+            hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
+
+            -hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
+            hfSide, -hfSide,  hfSide,  1.0f, 0.0f,
+            hfSide, -hfSide, -hfSide,  1.0f, 1.0f,
+            hfSide, -hfSide,  hfSide,  1.0f, 0.0f,
+            -hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
+            -hfSide, -hfSide,  hfSide,  0.0f, 0.0f,
+
+            -hfSide,  hfSide, -hfSide,  0.0f, 1.0f,
+            hfSide,  hfSide, -hfSide,  1.0f, 1.0f,
+            hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
+            hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
+            -hfSide,  hfSide,  hfSide,  0.0f, 0.0f,
+            -hfSide,  hfSide, -hfSide,  0.0f, 1.0f,
     };
 
     unsigned int indices[] = {
@@ -33,14 +66,16 @@ Cube::Cube(float side) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)nullptr);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
+    glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 }
 
 void Cube::draw() const {
     glBindVertexArray(_vao);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
 Cube::~Cube() {
@@ -122,10 +157,6 @@ Sphere::Sphere(float radius, int sectors, int stacks) {
 }
 
 void Sphere::draw() const {
-    if (texture > 0) {
-        glActiveTexture(0);
-        glBindTexture(GL_TEXTURE_2D, texture);
-    }
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, nullptr);
 }
@@ -184,17 +215,25 @@ Frustum::Frustum(float base, float top, float height, int sectors) {
         vertices.push_back(top * glm::cos(sectorAngle));
         vertices.push_back(top * glm::sin(sectorAngle));
         vertices.push_back(height / 2);
+        vertices.push_back(static_cast<float>(i) / sectors);
+        vertices.push_back(1.f);
 
         vertices.push_back(base * glm::cos(sectorAngle));
         vertices.push_back(base * glm::sin(sectorAngle));
         vertices.push_back(-height / 2);
+        vertices.push_back(static_cast<float>(i) / sectors);
+        vertices.push_back(.0f);
     }
     vertices.push_back(0.0f);
     vertices.push_back(0.0f);
     vertices.push_back(height / 2);
+    vertices.push_back(0.5f);
+    vertices.push_back(1.f);
     vertices.push_back(0.0f);
     vertices.push_back(0.0f);
     vertices.push_back(-height / 2);
+    vertices.push_back(0.5f);
+    vertices.push_back(0.0f);
 
     std::vector<unsigned int> indices;
     for (int i = 0; i < sectors; ++i) {
@@ -229,8 +268,10 @@ Frustum::Frustum(float base, float top, float height, int sectors) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 }
 

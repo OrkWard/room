@@ -29,7 +29,7 @@ public:
     void setTransformFeedbackVaryings(
         const std::vector<const char*>& varyings, GLenum bufferMode);
 
-    void link();
+    void link() const;
 
     void use();
 

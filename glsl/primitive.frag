@@ -1,6 +1,7 @@
 #version 330 core
 in vec3 normal;
 in vec3 fragPos;
+in vec2 gTexCoord;
 out vec4 color;
 
 struct Ambient {
@@ -25,6 +26,7 @@ uniform Ambient ambient;
 uniform Light light;
 uniform Material material;
 uniform vec3 viewPos;
+uniform sampler2D aTex;
 
 void main() {
     vec3 lightDir = normalize(fragPos - light.position);
@@ -36,5 +38,5 @@ void main() {
     vec3 reflectDir = reflect(lightDir, normal);
     vec3 specularLight = pow(max(dot(viewDir, reflectDir), 0.0f), material.ns) * light.color * material.ks * light.intensity;
 
-    color = vec4(ambientLight + diffLight + specularLight, 1.0f);
+    color = vec4(ambientLight + diffLight + specularLight, 1.0f) + texture(aTex, gTexCoord);
 }

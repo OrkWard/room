@@ -83,14 +83,14 @@ void GLSLProgram::setTransformFeedbackVaryings(
                                 varyings.data(), bufferMode);
 }
 
-void GLSLProgram::link() {
+void GLSLProgram::link() const {
     glLinkProgram(_handle);
 
     GLint success;
     glGetProgramiv(_handle, GL_LINK_STATUS, &success);
     if (!success) {
         char buffer[1024];
-        glGetProgramInfoLog(_handle, sizeof(buffer), NULL, buffer);
+        glGetProgramInfoLog(_handle, sizeof(buffer), nullptr, buffer);
         throw std::runtime_error("link program error: " + std::string(buffer));
     }
 }

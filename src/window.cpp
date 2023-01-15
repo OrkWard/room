@@ -174,54 +174,7 @@ void MainWindow::render() {
     ImGui::NewFrame();
 
     ImGui::ShowDemoWindow();
-
-    bool listOpen = true;
-    {
-        ImGui::SetNextWindowSize(ImVec2(300.0f, 300.0f));
-        ImGui::Begin("Edit", &listOpen);
-
-        if (ImGui::BeginListBox("Entity List")) {
-            for (int i = 0; i < _entityNames.size(); ++i) {
-                const bool is_selected = (_selectedEntity == i);
-                if (ImGui::Selectable(_entityNames[i].c_str(), is_selected)) {
-                    _selectedEntity = i;
-                }
-                if (ImGui::BeginPopupContextItem()) {
-                    _selectedEntity = i;
-                    if (ImGui::BeginMenu("Material")) {
-                        ImGui::ColorEdit3("Ambient", reinterpret_cast<float*>(&_entites[i]->ka));
-                        ImGui::ColorEdit3("Diffusion", reinterpret_cast<float*>(&_entites[i]->kd));
-                        ImGui::ColorEdit3("Specular", reinterpret_cast<float*>(&_entites[i]->ks));
-                        ImGui::SliderFloat("Shininess", &_entites[i]->ns, 4.0f, 256.0f);
-                        ImGui::EndMenu();
-                    }
-
-                    if (ImGui::BeginMenu("Texture")) {
-                        if (ImGui::MenuItem("(Not selected)"))
-                            _entites[i]->texture = -1;
-                        for (int j = 0; j < _textures.size(); ++j) {
-                            if (ImGui::MenuItem(std::to_string(j + 1).c_str())) {
-                                _entites[i]->texture = j;
-                                cout << j << endl;
-                            }
-                        }
-                        ImGui::EndMenu();
-                    }
-                    ImGui::EndPopup();
-                }
-
-                if (is_selected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndListBox();
-        }
-
-//        if (ImGui::BeginListBox("Light List")) {
-//            ImGui::EndListBox();
-//        }
-
-        ImGui::End();
-    }
+    showImGuiWindow();
 
     /* entity render */
     glEnable(GL_DEPTH_TEST);
@@ -245,7 +198,11 @@ void MainWindow::render() {
         _primitiveShader->setUniformVec3("material.ks", entity->ks);
         _primitiveShader->setUniformFloat("material.ns", entity->ns);
         _primitiveShader->setUniformVec3("viewPos", _camera->position);
+
+        if (entity->texture >= 0)
+            _textures[entity->texture]->bind();
         entity->draw();
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     ImGui::Render();
@@ -264,6 +221,53 @@ void MainWindow::render() {
     // render entity window
     if (_entityWindow)
         _entityWindow->render();
+}
+
+void MainWindow::showImGuiWindow() {
+    ImGui::SetNextWindowSize(ImVec2(300.0f, 300.0f));
+    ImGui::Begin("Edit");
+
+    if (ImGui::BeginListBox("Entity List")) {
+        for (int i = 0; i < _entityNames.size(); ++i) {
+            const bool is_selected = (_selectedEntity == i);
+            if (ImGui::Selectable(_entityNames[i].c_str(), is_selected)) {
+                _selectedEntity = i;
+            }
+            if (ImGui::BeginPopupContextItem()) {
+                _selectedEntity = i;
+                if (ImGui::BeginMenu("Material")) {
+                    ImGui::ColorEdit3("Ambient", reinterpret_cast<float*>(&_entites[i]->ka));
+                    ImGui::ColorEdit3("Diffusion", reinterpret_cast<float*>(&_entites[i]->kd));
+                    ImGui::ColorEdit3("Specular", reinterpret_cast<float*>(&_entites[i]->ks));
+                    ImGui::SliderFloat("Shininess", &_entites[i]->ns, 4.0f, 256.0f);
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu("Texture")) {
+                    if (ImGui::MenuItem("(Not selected)"))
+                        _entites[i]->texture = -1;
+                    for (int j = 0; j < _textures.size(); ++j) {
+                        if (ImGui::MenuItem(std::to_string(j + 1).c_str())) {
+                            _entites[i]->texture = j;
+                            cout << j << endl;
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndPopup();
+            }
+
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndListBox();
+    }
+
+//        if (ImGui::BeginListBox("Light List")) {
+//            ImGui::EndListBox();
+//        }
+
+    ImGui::End();
 }
 
 void MainWindow::chooseEntity(double xPos, double yPos) {
@@ -478,10 +482,10 @@ void EntityWindow::render() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // draw primitives
-    drawEntity(*_cube, 0);
-    drawEntity(*_sphere, 1);
-    drawEntity(*_prism, 2);
-    drawEntity(*_pyramid, 3);
+    drawEntity(*_cube, 0, false);
+    drawEntity(*_sphere, 1, false);
+    drawEntity(*_prism, 2, false);
+    drawEntity(*_pyramid, 3, false);
 
     /* end render */
     glfwSwapBuffers(_window);
@@ -495,10 +499,10 @@ void EntityWindow::drawLightCube() {
     _lightCube->draw();
 }
 
-void EntityWindow::drawEntity(const Entity &entity, int index) {
+void EntityWindow::drawEntity(const Entity &entity, int index, bool drawNormal) {
     // bind framebuffer and clear
     _framebuffer->bind();
-    glClearColor(0.0f, .0f, .0f, 1.0f);
+    glClearColor(.0f, .0f, .0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (chosenEntity == index) {
@@ -510,6 +514,7 @@ void EntityWindow::drawEntity(const Entity &entity, int index) {
         entity.draw();
     }
 
+    glEnable(GL_DEPTH_TEST);
     _primitiveShader->use();
     _primitiveShader->setUniformMat4("model", entity.getModelMat());
     _primitiveShader->setUniformMat4("view", _camera->getViewMatrix());
@@ -524,8 +529,14 @@ void EntityWindow::drawEntity(const Entity &entity, int index) {
     _primitiveShader->setUniformVec3("material.ks", entity.ks);
     _primitiveShader->setUniformFloat("material.ns", entity.ns);
     _primitiveShader->setUniformVec3("viewPos", _camera->position);
-    glEnable(GL_DEPTH_TEST);
     entity.draw();
+    if (drawNormal) {
+        _normalShader->use();
+        _normalShader->setUniformMat4("model", entity.getModelMat());
+        _normalShader->setUniformMat4("view", _camera->getViewMatrix());
+        _normalShader->setUniformMat4("project", _camera->getProjectionMatrix());
+        entity.draw();
+    }
     glDisable(GL_DEPTH_TEST);
 
     _framebuffer->unbind();
@@ -533,6 +544,7 @@ void EntityWindow::drawEntity(const Entity &entity, int index) {
     _quadShader->setUniformInt("aTex", 0);
     _colorTexture->bind(0);
     _quad[index]->draw();
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 EntityWindow::~EntityWindow() {

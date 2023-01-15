@@ -2,8 +2,9 @@
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 3) out;
 
-in vec3 FragPos[];
+in vec2 vTexCoord[];
 out vec3 normal;
+out vec2 gTexCoord;
 out vec3 fragPos;
 
 uniform mat4 view;
@@ -22,6 +23,7 @@ void main() {
     for (i = 0; i < 3; ++i) {
         gl_Position = project * view * gl_in[i].gl_Position;
         fragPos = gl_in[i].gl_Position.xyz / gl_in[i].gl_Position.w;
+        gTexCoord = vTexCoord[i];
         EmitVertex();
     }
     EndPrimitive();

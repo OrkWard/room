@@ -110,6 +110,7 @@ private:
     // entity to construct
     int _chosenEntity = -1;
 private:
+    void showImGuiWindow();
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     static void mouse_button_callback(GLFWwindow *window, int buttom, int action, int mods);
     static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos);
@@ -153,7 +154,8 @@ private:
     static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
     // draw point light cube (for debug)
     void drawLightCube();
-    void drawEntity(const Entity& entity, int index);
+    // draw entity normal (for debug)
+    void drawEntity(const Entity& entity, int index, bool drawNormal);
 };
 
 #endif //ROOM_WINDOW_H
