@@ -138,6 +138,9 @@ void MainWindow::key_callback(GLFWwindow *window, int key, int, int action, int)
 
     if (key == GLFW_KEY_F && action == GLFW_PRESS)
         mainWindow->orbit();
+
+    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
+        mainWindow->printScreen();
 }
 
 void MainWindow::mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
@@ -424,6 +427,16 @@ MainWindow::~MainWindow() {
     ImGui::DestroyContext();
     glfwDestroyWindow(_window);
     for (auto & _entite : _entites) delete _entite;
+}
+
+void MainWindow::printScreen() {
+    int width, height;
+    glfwGetWindowSize(_window, &width, &height);
+    auto *data = malloc(sizeof(GLint) * width * height * 3);
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+    stbi_flip_vertically_on_write(true);
+    stbi_write_png("print_screen.png", width, height, 3, data, width * 3);
+    free(data);
 }
 
 // EntityWindow

@@ -11,6 +11,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <imguiFileDialog/ImGuiFileDialog.h>
+#include <stb/stb_image_write.h>
 #include <iostream>
 #include <memory>
 
@@ -78,11 +79,13 @@ public:
     ~MainWindow();
     // swtich entity window
     void switchEntity();
+
     void chooseEntity(double xPos, double yPos);
     void addEntity(const char *path);
     void render() override;
     void setCursorPosition(double xPos, double yPos);
     void orbit();
+    void printScreen();
 
     // mouse viewport change event
     void setCameraResize(int width, int height);
