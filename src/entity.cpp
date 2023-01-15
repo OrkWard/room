@@ -3,47 +3,48 @@
 Cube::Cube(float side) {
     float hfSide = side / 2;
     float vertices[] = {
-            -hfSide, -hfSide, -hfSide,  0.0f, 0.0f,
-            hfSide, -hfSide, -hfSide,  1.0f, 0.0f,
-            hfSide,  hfSide, -hfSide,  1.0f, 1.0f,
-            hfSide,  hfSide, -hfSide,  1.0f, 1.0f,
-            -hfSide,  hfSide, -hfSide,  0.0f, 1.0f,
-            -hfSide, -hfSide, -hfSide,  0.0f, 0.0f,
+            // positions          // normals           // texture coords
+            -hfSide, -hfSide, -hfSide,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+            hfSide, -hfSide, -hfSide,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+            hfSide,  hfSide, -hfSide,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+            hfSide,  hfSide, -hfSide,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+            -hfSide,  hfSide, -hfSide,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+            -hfSide, -hfSide, -hfSide,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 
-            -hfSide, -hfSide,  hfSide,  0.0f, 0.0f,
-            hfSide,  hfSide,  hfSide,  1.0f, 1.0f,
-            hfSide, -hfSide,  hfSide,  1.0f, 0.0f,
-            hfSide,  hfSide,  hfSide,  1.0f, 1.0f,
-            -hfSide, -hfSide,  hfSide,  0.0f, 0.0f,
-            -hfSide,  hfSide,  hfSide,  0.0f, 1.0f,
+            -hfSide, -hfSide,  hfSide,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+            hfSide, -hfSide,  hfSide,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+            hfSide,  hfSide,  hfSide,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+            hfSide,  hfSide,  hfSide,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+            -hfSide,  hfSide,  hfSide,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+            -hfSide, -hfSide,  hfSide,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
 
-            -hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
-            -hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
-            -hfSide,  hfSide, -hfSide,  1.0f, 1.0f,
-            -hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
-            -hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
-            -hfSide, -hfSide,  hfSide,  0.0f, 0.0f,
+            -hfSide,  hfSide,  hfSide, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+            -hfSide,  hfSide, -hfSide, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+            -hfSide, -hfSide, -hfSide, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+            -hfSide, -hfSide, -hfSide, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+            -hfSide, -hfSide,  hfSide, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+            -hfSide,  hfSide,  hfSide, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-            hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
-            hfSide,  hfSide, -hfSide,  1.0f, 1.0f,
-            hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
-            hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
-            hfSide, -hfSide,  hfSide,  0.0f, 0.0f,
-            hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
+            hfSide,  hfSide,  hfSide,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+            hfSide,  hfSide, -hfSide,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+            hfSide, -hfSide, -hfSide,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+            hfSide, -hfSide, -hfSide,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+            hfSide, -hfSide,  hfSide,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+            hfSide,  hfSide,  hfSide,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-            -hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
-            hfSide, -hfSide,  hfSide,  1.0f, 0.0f,
-            hfSide, -hfSide, -hfSide,  1.0f, 1.0f,
-            hfSide, -hfSide,  hfSide,  1.0f, 0.0f,
-            -hfSide, -hfSide, -hfSide,  0.0f, 1.0f,
-            -hfSide, -hfSide,  hfSide,  0.0f, 0.0f,
+            -hfSide, -hfSide, -hfSide,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+            hfSide, -hfSide, -hfSide,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+            hfSide, -hfSide,  hfSide,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+            hfSide, -hfSide,  hfSide,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+            -hfSide, -hfSide,  hfSide,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+            -hfSide, -hfSide, -hfSide,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
 
-            -hfSide,  hfSide, -hfSide,  0.0f, 1.0f,
-            hfSide,  hfSide, -hfSide,  1.0f, 1.0f,
-            hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
-            hfSide,  hfSide,  hfSide,  1.0f, 0.0f,
-            -hfSide,  hfSide,  hfSide,  0.0f, 0.0f,
-            -hfSide,  hfSide, -hfSide,  0.0f, 1.0f,
+            -hfSide,  hfSide, -hfSide,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+            hfSide,  hfSide, -hfSide,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+            hfSide,  hfSide,  hfSide,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+            hfSide,  hfSide,  hfSide,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+            -hfSide,  hfSide,  hfSide,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+            -hfSide,  hfSide, -hfSide,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
 
     unsigned int indices[] = {
@@ -66,10 +67,12 @@ Cube::Cube(float side) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)nullptr);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float) * 3));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float) * 6));
+    glEnableVertexAttribArray(2);
     glBindVertexArray(0);
 }
 
@@ -107,12 +110,19 @@ Sphere::Sphere(float radius, int sectors, int stacks) {
             float sectorAngle = 2 * glm::pi<float>() / sectors * j;
             float x = xy * glm::cos(sectorAngle);
             float y = xy * glm::sin(sectorAngle);
+            // position
             vertices.push_back(x);
             vertices.push_back(y);
             vertices.push_back(z);
 
+            // normal
+            vertices.push_back(x / radius);
+            vertices.push_back(y / radius);
+            vertices.push_back(z / radius);
+
             float s = (float)j / sectors;
             float t = (float)i / stacks;
+            // texture coords
             vertices.push_back(s);
             vertices.push_back(t);
         }
@@ -149,10 +159,12 @@ Sphere::Sphere(float radius, int sectors, int stacks) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
     glBindVertexArray(0);
 }
 
@@ -208,53 +220,60 @@ Quad::~Quad() {
 }
 
 Frustum::Frustum(float base, float top, float height, int sectors) {
-    std::vector<float> vertices;
+    std::vector<Vertex> vertices;
+    float tang = (base - top) / height;
+    Vertex vertex{};
 
     for (int i = 0; i <= sectors; ++i) {
         float sectorAngle = 2 * glm::pi<float>() * i / sectors;
-        vertices.push_back(top * glm::cos(sectorAngle));
-        vertices.push_back(top * glm::sin(sectorAngle));
-        vertices.push_back(height / 2);
-        vertices.push_back(static_cast<float>(i) / sectors);
-        vertices.push_back(1.f);
+        // top two points
+        float x = glm::cos(sectorAngle);
+        float y = glm::sin(sectorAngle);
+        vertex.position = glm::vec3(x * top, y * top, height / 2);
+        vertex.normal = glm::vec3(x, y, tang);
+        vertex.texCoord = glm::vec2(static_cast<float>(i) / sectors, 1.0f);
+        vertices.push_back(vertex);
+        vertex.normal = glm::vec3(0.0f, 0.0f, 1.0f);
+        vertices.push_back(vertex);
 
-        vertices.push_back(base * glm::cos(sectorAngle));
-        vertices.push_back(base * glm::sin(sectorAngle));
-        vertices.push_back(-height / 2);
-        vertices.push_back(static_cast<float>(i) / sectors);
-        vertices.push_back(.0f);
+        // base two points
+        vertex.position = glm::vec3(x * base, y * base, -height / 2);
+        vertex.normal = glm::vec3(x, y, tang);
+        vertex.texCoord.y = 0.0f;
+        vertices.push_back(vertex);
+        vertex.normal = glm::vec3(0.0f, 0.0f, -1.0f);
+        vertices.push_back(vertex);
     }
-    vertices.push_back(0.0f);
-    vertices.push_back(0.0f);
-    vertices.push_back(height / 2);
-    vertices.push_back(0.5f);
-    vertices.push_back(1.f);
-    vertices.push_back(0.0f);
-    vertices.push_back(0.0f);
-    vertices.push_back(-height / 2);
-    vertices.push_back(0.5f);
-    vertices.push_back(0.0f);
+    vertex.position = glm::vec3(0.0f, 0.0f, height / 2);
+    vertex.normal = glm::vec3(0.0f, 0.0f, 1.0f);
+    vertex.texCoord = glm::vec2(0.5f, 1.0f);
+    vertices.push_back(vertex);
+
+    vertex.position.z = -height / 2;
+    vertex.normal.z = -1.0f;
+    vertex.texCoord.y = -1.0f;
+    vertices.push_back(vertex);
 
     std::vector<unsigned int> indices;
     for (int i = 0; i < sectors; ++i) {
-        int k = i * 2;
+        int k = i * 4;
         indices.push_back(k);
         indices.push_back(k + 2);
-        indices.push_back(k + 1);
+        indices.push_back(k + 4);
 
-        indices.push_back(k + 1);
         indices.push_back(k + 2);
-        indices.push_back(k + 3);
+        indices.push_back(k + 4);
+        indices.push_back(k + 6);
 
         // up
-        indices.push_back(k);
-        indices.push_back(2 * (sectors + 1));
-        indices.push_back(k + 2);
+        indices.push_back(k + 1);
+        indices.push_back(4 * (sectors + 1));
+        indices.push_back(k + 5);
 
         // down
-        indices.push_back(k + 1);
         indices.push_back(k + 3);
-        indices.push_back(2 * (sectors + 1) + 1);
+        indices.push_back(k + 7);
+        indices.push_back(4 * (sectors + 1) + 1);
     }
     _count = indices.size();
 
@@ -264,14 +283,16 @@ Frustum::Frustum(float base, float top, float height, int sectors) {
 
     glBindVertexArray(_vao);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+    glEnableVertexAttribArray(2);
     glBindVertexArray(0);
 }
 

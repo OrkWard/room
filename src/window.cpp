@@ -74,7 +74,6 @@ MainWindow::MainWindow(int width, int height):
     // init shader
     _primitiveShader = std::make_unique<GLSLProgram>();
     _primitiveShader->attachVertexShaderFromFile("../glsl/primitive.vert");
-    _primitiveShader->attachGeometryShaderFromFile("../glsl/primitive.geom");
     _primitiveShader->attachFragmentShaderFromFile("../glsl/primitive.frag");
     _primitiveShader->link();
     _axisShader = std::make_unique<GLSLProgram>();
@@ -441,7 +440,6 @@ EntityWindow::EntityWindow(MainWindow *mainWindow):
     // init shader
     _primitiveShader = std::make_unique<GLSLProgram>();
     _primitiveShader->attachVertexShaderFromFile("../glsl/primitive.vert");
-    _primitiveShader->attachGeometryShaderFromFile("../glsl/primitive.geom");
     _primitiveShader->attachFragmentShaderFromFile("../glsl/primitive.frag");
     _primitiveShader->link();
     _simpleShader = std::make_unique<GLSLProgram>();
@@ -500,7 +498,7 @@ void EntityWindow::render() {
 
     // draw primitives
     drawEntity(*_cube, 0, false);
-    drawEntity(*_sphere, 1, false);
+    drawEntity(*_sphere, 1, true);
     drawEntity(*_prism, 2, false);
     drawEntity(*_pyramid, 3, false);
 

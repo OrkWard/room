@@ -6,7 +6,6 @@
 #include <glad/glad.h>
 
 #include "bounding_box.h"
-#include "vertex.h"
 #include "entity.h"
 
 class Model: public Entity{

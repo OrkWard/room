@@ -132,10 +132,10 @@ private:
     PointLight _light;
 
     // entities
-    std::unique_ptr<Cube> _cube;
-    std::unique_ptr<Sphere> _sphere;
-    std::unique_ptr<Frustum> _prism;
-    std::unique_ptr<Frustum> _pyramid;
+    std::unique_ptr<Entity> _cube;
+    std::unique_ptr<Entity> _sphere;
+    std::unique_ptr<Entity> _prism;
+    std::unique_ptr<Entity> _pyramid;
 
     // framebuffer
     std::unique_ptr<Framebuffer> _framebuffer;

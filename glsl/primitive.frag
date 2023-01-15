@@ -1,7 +1,7 @@
 #version 330 core
-in vec3 normal;
+in vec3 vNormal;
 in vec3 fragPos;
-in vec2 gTexCoord;
+in vec2 vTexCoord;
 out vec4 color;
 
 struct Ambient {
@@ -32,11 +32,11 @@ void main() {
     vec3 lightDir = normalize(fragPos - light.position);
     vec3 ambientLight = ambient.color * material.ka * ambient.intensity;
 
-    vec3 diffLight = max(dot(normal, -lightDir), 0.0) * light.color * material.kd * light.intensity;
+    vec3 diffLight = max(dot(vNormal, -lightDir), 0.0) * light.color * material.kd * light.intensity;
 
     vec3 viewDir = normalize(viewPos - fragPos);
-    vec3 reflectDir = reflect(lightDir, normal);
+    vec3 reflectDir = reflect(lightDir, vNormal);
     vec3 specularLight = pow(max(dot(viewDir, reflectDir), 0.0f), material.ns) * light.color * material.ks * light.intensity;
 
-    color = vec4(ambientLight + diffLight + specularLight, 1.0f) + texture(aTex, gTexCoord);
+    color = vec4(ambientLight + diffLight + specularLight, 1.0f) + texture(aTex, vTexCoord);
 }
