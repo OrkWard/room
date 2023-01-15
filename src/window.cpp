@@ -71,7 +71,7 @@ MainWindow::MainWindow(int width, int height):
     // init axis
     _axis = std::make_unique<Axis>();
     // init light cube
-    _lightCube = std::make_unique<Cube>(2.0f);
+    _lightCube = std::make_unique<Cube>(0.5f);
     _lightCube->position = glm::vec3(3.0f, -3.0f, 3.0f);
 
     // init shader
@@ -244,7 +244,7 @@ void MainWindow::render() {
 }
 
 void MainWindow::showImGuiWindow() {
-    ImGui::SetNextWindowSize(ImVec2(300.0f, 300.0f));
+    ImGui::SetNextWindowSize(ImVec2(300.0f, 350.0f));
     ImGui::Begin("Edit");
     if (ImGui::Button("Import obj"))
         ImGuiFileDialog::Instance()->OpenDialog("Obj", "Choose obj to import", ".obj", "../media/.");
@@ -547,7 +547,7 @@ void EntityWindow::drawEntity(const Entity &entity, int index, bool drawNormal) 
         _simpleShader->setUniformMat4("model", entity.getModelMat() * scaleMat);
         _simpleShader->setUniformMat4("view", _camera->getViewMatrix());
         _simpleShader->setUniformMat4("project", _camera->getProjectionMatrix());
-        _simpleShader->setUniformVec3("aColor", glm::vec3(1.0f, 0.8f, 0.8f));
+        _simpleShader->setUniformVec3("aColor", glm::vec3(1.0f, 0.8f, 0.3f));
         entity.draw();
     }
 
