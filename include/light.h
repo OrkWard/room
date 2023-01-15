@@ -4,7 +4,7 @@
 #include <glm/ext.hpp>
 
 struct AmbientLight {
-    float intensity = 0.3f;
+    float intensity = 0.2f;
     glm::vec3 color = { 1.0f, 1.0f, 1.0f };
 };
 

@@ -16,7 +16,6 @@ public:
     glm::vec3 position = glm::vec3(.0f);
     glm::quat rotation = glm::angleAxis(0.0f, glm::vec3(.0f, .0f, 1.0f));
     glm::vec3 scale = glm::vec3(1.0f);
-    glm::vec3 ka = glm::vec3(1.0f);
     glm::vec3 kd = glm::vec3(1.0f);
     glm::vec3 ks = glm::vec3(1.0f);
     float ns = 32.0f;
@@ -26,6 +25,7 @@ public:
     glm::mat4 getModelMat() const;
     static glm::vec3 getDefaultUp();
     virtual void draw() const = 0;
+//    virtual void exportObj(std::string &path) const = 0;
 };
 
 class Cube: public Entity {

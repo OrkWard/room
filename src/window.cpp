@@ -70,6 +70,9 @@ MainWindow::MainWindow(int width, int height):
 
     // init axis
     _axis = std::make_unique<Axis>();
+    // init light cube
+    _lightCube = std::make_unique<Cube>(2.0f);
+    _lightCube->position = glm::vec3(3.0f, -3.0f, 3.0f);
 
     // init shader
     _primitiveShader = std::make_unique<GLSLProgram>();
@@ -80,12 +83,16 @@ MainWindow::MainWindow(int width, int height):
     _axisShader->attachVertexShaderFromFile("../glsl/axis.vert");
     _axisShader->attachFragmentShaderFromFile("../glsl/axis.frag");
     _axisShader->link();
+    _lightCubeShader = std::make_unique<GLSLProgram>();
+    _lightCubeShader->attachVertexShaderFromFile("../glsl/simple.vert");
+    _lightCubeShader->attachFragmentShaderFromFile("../glsl/simple.frag");
+    _lightCubeShader->link();
     initNormalShader();
 
     // init light
-    _light.color = glm::vec3(0.3f, 0.4f, 0.8f);
-    _light.position = glm::vec3(3.0f, -3.0f, 3.0f);
-    _ambient.color = glm::vec3(0.3f, 0.4f, 0.8f);
+    _light.color = glm::vec3(0.8f);
+    _light.position = _lightCube->position;
+    _ambient.color = glm::vec3(0.8f);
 
     // init camera
     _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
@@ -182,6 +189,14 @@ void MainWindow::render() {
     _axisShader->setUniformMat4("project", _camera->getProjectionMatrix());
     _axis->draw();
 
+    _lightCube->position = _light.position;
+    _lightCubeShader->use();
+    _lightCubeShader->setUniformMat4("model", _lightCube->getModelMat());
+    _lightCubeShader->setUniformMat4("view", _camera->getViewMatrix());
+    _lightCubeShader->setUniformMat4("project", _camera->getProjectionMatrix());
+    _lightCubeShader->setUniformVec3("aColor", _light.color);
+    _lightCube->draw();
+
     for (const auto& entity : _entites) {
         _primitiveShader->use();
         _primitiveShader->setUniformMat4("model", entity->getModelMat());
@@ -192,14 +207,17 @@ void MainWindow::render() {
         _primitiveShader->setUniformFloat("light.intensity", _light.intensity);
         _primitiveShader->setUniformVec3("ambient.color", _ambient.color);
         _primitiveShader->setUniformFloat("ambient.intensity", _ambient.intensity);
-        _primitiveShader->setUniformVec3("material.ka", entity->ka);
         _primitiveShader->setUniformVec3("material.kd", entity->kd);
         _primitiveShader->setUniformVec3("material.ks", entity->ks);
         _primitiveShader->setUniformFloat("material.ns", entity->ns);
         _primitiveShader->setUniformVec3("viewPos", _camera->position);
 
-        if (entity->texture >= 0)
+        if (entity->texture >= 0) {
+            _primitiveShader->setUniformBool("useTexture", true);
             _textures[entity->texture]->bind();
+        }
+        else
+            _primitiveShader->setUniformBool("useTexture", false);
         entity->draw();
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -240,6 +258,10 @@ void MainWindow::showImGuiWindow() {
         ImGuiFileDialog::Instance()->Close();
     }
 
+    ImGui::DragFloat3("Point light position", reinterpret_cast<float*>(&_light.position), 0.5f, -100.0f, 100.0f);
+    ImGui::ColorEdit3("Point light color", reinterpret_cast<float*>(&_light.color));
+    ImGui::DragFloat("Point light intensity", &_light.intensity, 0.5f, 0.0f, 100.0f);
+
     if (ImGui::BeginListBox("Entity List")) {
         for (int i = 0; i < _entityNames.size(); ++i) {
             const bool is_selected = (_selectedEntity == i);
@@ -249,7 +271,6 @@ void MainWindow::showImGuiWindow() {
             if (ImGui::BeginPopupContextItem()) {
                 _selectedEntity = i;
                 if (ImGui::BeginMenu("Material")) {
-                    ImGui::ColorEdit3("Ambient", reinterpret_cast<float*>(&_entites[i]->ka));
                     ImGui::ColorEdit3("Diffusion", reinterpret_cast<float*>(&_entites[i]->kd));
                     ImGui::ColorEdit3("Specular", reinterpret_cast<float*>(&_entites[i]->ks));
                     ImGui::SliderFloat("Shininess", &_entites[i]->ns, 4.0f, 256.0f);
@@ -427,10 +448,6 @@ EntityWindow::EntityWindow(MainWindow *mainWindow):
     _prism = std::make_unique<Frustum>(2.0f, 2.0f, 4.0f, 36);
     _pyramid = std::make_unique<Frustum>(2.0f, 0.0f, 4.0f, 36);
 
-    // init light cube
-    _lightCube = std::make_unique<Cube>(0.5f);
-    _lightCube->position = glm::vec3(5.0f, 3.0f, 4.0f);
-
     // init quad
     _quad[0] = std::make_unique<Quad>(-1.0f, 0.0f, 1.0f, 0.0f);
     _quad[1] = std::make_unique<Quad>(0.0f, 1.0f, 1.0f, 0.0f);
@@ -468,10 +485,9 @@ EntityWindow::EntityWindow(MainWindow *mainWindow):
     _camera->position = glm::vec3(5.0f, 4.0f, 4.0f);
 
     // init light
-    _light.color = glm::vec3(0.3f, 0.4f, 0.8f);
+    _light.color = glm::vec3(0.8f);
     _light.position = glm::vec3(3.0f, -3.0f, 3.0f);
-    _ambient.color = glm::vec3(0.3f, 0.4f, 0.8f);
-    _lightCube->position = _light.position;
+    _ambient.color = glm::vec3(0.8f);
 }
 
 void EntityWindow::window_close_callback(GLFWwindow *window) {
@@ -498,20 +514,12 @@ void EntityWindow::render() {
 
     // draw primitives
     drawEntity(*_cube, 0, false);
-    drawEntity(*_sphere, 1, true);
+    drawEntity(*_sphere, 1, false);
     drawEntity(*_prism, 2, false);
     drawEntity(*_pyramid, 3, false);
 
     /* end render */
     glfwSwapBuffers(_window);
-}
-
-void EntityWindow::drawLightCube() {
-    _simpleShader->use();
-    _simpleShader->setUniformMat4("model", _lightCube->getModelMat());
-    _simpleShader->setUniformMat4("view", _camera->getViewMatrix());
-    _simpleShader->setUniformMat4("project", _camera->getProjectionMatrix());
-    _lightCube->draw();
 }
 
 void EntityWindow::drawEntity(const Entity &entity, int index, bool drawNormal) {
@@ -526,6 +534,7 @@ void EntityWindow::drawEntity(const Entity &entity, int index, bool drawNormal) 
         _simpleShader->setUniformMat4("model", entity.getModelMat() * scaleMat);
         _simpleShader->setUniformMat4("view", _camera->getViewMatrix());
         _simpleShader->setUniformMat4("project", _camera->getProjectionMatrix());
+        _simpleShader->setUniformVec3("aColor", glm::vec3(1.0f, 0.8f, 0.8f));
         entity.draw();
     }
 
@@ -539,11 +548,11 @@ void EntityWindow::drawEntity(const Entity &entity, int index, bool drawNormal) 
     _primitiveShader->setUniformFloat("light.intensity", _light.intensity);
     _primitiveShader->setUniformVec3("ambient.color", _ambient.color);
     _primitiveShader->setUniformFloat("ambient.intensity", _ambient.intensity);
-    _primitiveShader->setUniformVec3("material.ka", entity.ka);
     _primitiveShader->setUniformVec3("material.kd", entity.kd);
     _primitiveShader->setUniformVec3("material.ks", entity.ks);
     _primitiveShader->setUniformFloat("material.ns", entity.ns);
     _primitiveShader->setUniformVec3("viewPos", _camera->position);
+    _primitiveShader->setUniformBool("useTexture", false);
     entity.draw();
     if (drawNormal) {
         _normalShader->use();

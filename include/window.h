@@ -94,6 +94,7 @@ public:
 private:
     std::unique_ptr<EntityWindow> _entityWindow;
 
+    // entity resources
     std::unique_ptr<GLSLProgram> _primitiveShader;
     std::vector<Entity*> _entites;
     std::vector<std::string> _entityNames;
@@ -107,6 +108,8 @@ private:
     std::unique_ptr<GLSLProgram> _axisShader;
     AmbientLight _ambient;
     PointLight _light;
+    std::unique_ptr<Entity> _lightCube;
+    std::unique_ptr<GLSLProgram> _lightCubeShader;
 
     // entity to construct
     int _chosenEntity = -1;
@@ -126,7 +129,6 @@ public:
 private:
     std::unique_ptr<GLSLProgram> _primitiveShader;
     std::unique_ptr<GLSLProgram> _simpleShader;
-    std::unique_ptr<Cube> _lightCube;
     std::unique_ptr<PerspectiveCamera> _camera;
     AmbientLight _ambient;
     PointLight _light;
@@ -153,8 +155,6 @@ private:
     static void window_close_callback(GLFWwindow *window);
     static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos);
     static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
-    // draw point light cube (for debug)
-    void drawLightCube();
     // draw entity normal (for debug)
     void drawEntity(const Entity& entity, int index, bool drawNormal);
 };
