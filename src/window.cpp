@@ -226,6 +226,20 @@ void MainWindow::render() {
 void MainWindow::showImGuiWindow() {
     ImGui::SetNextWindowSize(ImVec2(300.0f, 300.0f));
     ImGui::Begin("Edit");
+    if (ImGui::Button("Import obj"))
+        ImGuiFileDialog::Instance()->OpenDialog("Obj", "Choose obj to import", ".obj", "../media/");
+
+    if (ImGuiFileDialog::Instance()->Display("Obj"))
+    {
+        if (ImGuiFileDialog::Instance()->IsOk())
+        {
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+            cout << filePath << endl << filePathName << endl;
+        }
+
+        ImGuiFileDialog::Instance()->Close();
+    }
 
     if (ImGui::BeginListBox("Entity List")) {
         for (int i = 0; i < _entityNames.size(); ++i) {
@@ -456,6 +470,7 @@ EntityWindow::EntityWindow(MainWindow *mainWindow):
     _light.color = glm::vec3(0.3f, 0.4f, 0.8f);
     _light.position = glm::vec3(3.0f, -3.0f, 3.0f);
     _ambient.color = glm::vec3(0.3f, 0.4f, 0.8f);
+    _lightCube->position = _light.position;
 }
 
 void EntityWindow::window_close_callback(GLFWwindow *window) {
@@ -475,7 +490,6 @@ void EntityWindow::render() {
     _sphere->rotation = glm::angleAxis((float)currentFrame / 2, _sphere->getDefaultUp());
     _prism->rotation = glm::angleAxis((float)currentFrame / 2, _prism->getDefaultUp());
     _pyramid->rotation = glm::angleAxis((float)currentFrame / 2, _pyramid->getDefaultUp());
-    _lightCube->position = _light.position;
 
     /* begin render */
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
