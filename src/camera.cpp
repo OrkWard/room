@@ -22,12 +22,13 @@ glm::vec3 Camera::getFront() const {
     return glm::normalize(center - position);
 }
 
-PerspectiveCamera::PerspectiveCamera(float fovy, float aspect, float znear, float zfar) {
-    project = glm::perspective(fovy, aspect, znear, zfar);
+PerspectiveCamera::PerspectiveCamera(float fovy, float aspect) {
+    this->fovy = fovy;
+    this->aspect = aspect;
 }
 
 glm::mat4 PerspectiveCamera::getProjectionMatrix() const {
-	return project;
+	return glm::perspective(glm::radians(fovy), aspect, 0.1f, 10000.f);
 }
 
 OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top, float znear, float zfar) {

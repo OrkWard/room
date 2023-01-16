@@ -90,7 +90,7 @@ public:
     // mouse viewport change event
     void setCameraResize(int width, int height);
     void setCameraMouse(double xPos, double yPos);
-    void setCameraScroll(double offset);
+    void setCameraScroll(double offset, int mods);
 
     // mouse entity edit event
     void setEntityMouse(double xPos, double yPos);

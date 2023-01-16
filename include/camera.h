@@ -21,9 +21,10 @@ public:
 
 class PerspectiveCamera : public Camera {
 public:
-    glm::mat4 project;
+    float aspect;
+    float fovy;
 public:
-	PerspectiveCamera(float fovy, float aspect, float znear, float zfar);
+	PerspectiveCamera(float fovy, float aspect);
 
 	glm::mat4 getProjectionMatrix() const override;
 };

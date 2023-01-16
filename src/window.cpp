@@ -95,8 +95,7 @@ MainWindow::MainWindow(int width, int height):
     _ambient.color = glm::vec3(0.8f);
 
     // init camera
-    _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
-                                                  (float)SCR_WIDTH / SCR_HEIGHT, .1f, 10000.0f);
+    _camera = std::make_unique<PerspectiveCamera>(50.0f, (float)SCR_WIDTH / SCR_HEIGHT);
     _camera->position = glm::vec3(15.0f, 18.0f, 10.0f);
 }
 
@@ -162,7 +161,7 @@ void MainWindow::cursor_position_callback(GLFWwindow *window, double xpos, doubl
 
 void MainWindow::scroll_callback(GLFWwindow *window, double , double yoffset) {
     auto mainWindow = static_cast<MainWindow*>(glfwGetWindowUserPointer(window));
-    mainWindow->setCameraScroll(yoffset);
+    mainWindow->setCameraScroll(yoffset, glfwGetKey(window, GLFW_KEY_LEFT_SHIFT));
 }
 
 void MainWindow::switchEntity() {
@@ -299,10 +298,6 @@ void MainWindow::showImGuiWindow() {
         ImGui::EndListBox();
     }
 
-//        if (ImGui::BeginListBox("Light List")) {
-//            ImGui::EndListBox();
-//        }
-
     ImGui::End();
 }
 
@@ -347,8 +342,7 @@ void MainWindow::setCursorPosition(double xPos, double yPos) {
 }
 
 void MainWindow::setCameraResize(int width, int height) {
-    _camera->project = glm::perspective(glm::radians(50.0f),
-                                        static_cast<float>(width) / height, .1f, 10000.f);
+    _camera->aspect = static_cast<float>(width) / height;
 }
 
 void MainWindow::setCameraMouse(double xPos, double yPos) {
@@ -370,9 +364,14 @@ void MainWindow::setCameraMouse(double xPos, double yPos) {
     }
 }
 
-void MainWindow::setCameraScroll(double offset) {
-    _camera->position += static_cast<float>(offset) * _camera->getFront() * SCROLL_SPEED;
-    _camera->center += static_cast<float>(offset) * _camera->getFront() * SCROLL_SPEED;
+void MainWindow::setCameraScroll(double offset, int mods) {
+    if (mods == GLFW_PRESS) {
+        _camera->position += static_cast<float>(offset) * _camera->getFront() * SCROLL_SPEED;
+        _camera->center += static_cast<float>(offset) * _camera->getFront() * SCROLL_SPEED;
+    }
+    else {
+        _camera->fovy += static_cast<float>(-offset) * SCROLL_SPEED;
+    }
 }
 
 void MainWindow::setEntityMouse(double xPos, double yPos) {
@@ -493,8 +492,7 @@ EntityWindow::EntityWindow(MainWindow *mainWindow):
     _framebuffer->attachTexture2D(*_depthTexture, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D);
 
     // init camera
-    _camera = std::make_unique<PerspectiveCamera>(glm::radians(50.0f),
-                                                  (float)EN_WIDTH / EN_HEIGHT, .1f, 10000.0f);
+    _camera = std::make_unique<PerspectiveCamera>(50.0f, (float)EN_WIDTH / EN_HEIGHT);
     _camera->position = glm::vec3(5.0f, 4.0f, 4.0f);
 
     // init light
